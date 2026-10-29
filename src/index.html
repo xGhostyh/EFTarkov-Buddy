@@ -4,19 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tarkov Buddy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script defer src="main.js"></script>
 </head>
 <body>
 
+  <!-- Canvas para el fondo topográfico procedural dinámico -->
+  <canvas id="bg-canvas"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+
   <header>
-    <div class="top-line">
-      <h1>EFTarkov Buddy</h1>
+    <!-- Logo y título juntos a la izquierda usando flex-start y un gap ajustado -->
+    <div class="top-line" style="display: flex; align-items: center; justify-content: flex-start; gap: 10px;">
+      <img src="icon.png" alt="Logo" style="width: 36px; height: 36px; object-fit: contain;">
+      <h1>EFTarkov <b>Buddy</b></h1>
     </div>
 
     <!-- Main Navigation: Quest / View Type -->
     <div class="nav-section">
-      <div class="nav-title">NAVIGATION:</div>
+      <div class="nav-title">// NAVIGATION:</div>
       <div id="type-bar" class="wrap-bar">
         <button class="nav-btn selected-type" data-type="SIDE">Side Quests</button>
         <button class="nav-btn" data-type="MAIN">Main Story (1.0)</button>
@@ -30,11 +39,11 @@
     <!-- Filters for Side Quests (Traders and Maps) -->
     <div id="side-filters-container">
       <div class="nav-section">
-        <div class="nav-title">TRADERS:</div>
+        <div class="nav-title">// TRADERS:</div>
         <div id="trader-bar" class="wrap-bar"></div>
       </div>
       <div class="nav-section">
-        <div class="nav-title">MAP:</div>
+        <div class="nav-title">// MAP:</div>
         <div id="map-bar" class="wrap-bar"></div>
       </div>
     </div>
@@ -42,7 +51,7 @@
     <!-- Filters for Main Story (Chapters) -->
     <div id="main-filters-container" style="display: none;">
       <div class="nav-section">
-        <div class="nav-title">CHAPTER:</div>
+        <div class="nav-title">// CHAPTER:</div>
         <div id="chapter-bar" class="wrap-bar"></div>
       </div>
     </div>
@@ -50,7 +59,7 @@
     <!-- Filters for Maps Tab -->
     <div id="maps-filters-container" style="display: none;">
       <div class="nav-section">
-        <div class="nav-title">MAP:</div>
+        <div class="nav-title">// MAP:</div>
         <div id="maps-only-bar" class="wrap-bar"></div>
       </div>
     </div>
@@ -58,7 +67,7 @@
     <!-- Filters for Hideout Tab -->
     <div id="hideout-filters-container" style="display: none;">
       <div class="nav-section">
-        <div class="nav-title">MODULE:</div>
+        <div class="nav-title">// MODULE:</div>
         <div id="hideout-bar" class="wrap-bar"></div>
       </div>
     </div>
@@ -79,6 +88,26 @@
 
   <!-- Main Container for Cards / Maps / Hideout -->
   <main id="quests-container"></main>
+
+  <!-- Carga de la librería procedural y montaje del fondo -->
+  <script src="topo-background.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const bgCanvas = document.getElementById("bg-canvas");
+      if (bgCanvas && window.TopoBackground) {
+        TopoBackground.mount(bgCanvas, {
+          seed: Math.floor(Math.random() * 10000000),
+          bgColor: "#0b0d0a",
+          lineColor: "#8a9a4a",
+          opacity: 0.22,
+          levels: 16,
+          glow: true,
+          shade: true,
+          grid: true
+        });
+      }
+    });
+  </script>
 
 </body>
 </html>

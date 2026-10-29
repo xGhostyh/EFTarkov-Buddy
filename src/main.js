@@ -732,7 +732,7 @@ function renderQuests() {
               await invoke('save_progress', { progress });
             }
             renderQuests();
-            showToast("Backup imported successfully!");
+            showToast("Backup imported successfully!"); // Notificación de importación
           } else {
             alert("⚠️ Invalid backup file format.");
           }
@@ -751,6 +751,7 @@ function renderQuests() {
           await invoke('save_progress', { progress });
         }
         renderQuests();
+        showToast("Wipe reset completed successfully!"); // Notificación de reseteo
       }
     };
 
