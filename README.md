@@ -88,6 +88,6 @@ Your progress can be exported to a JSON file and imported again at any time, so 
 
 ---
 
-> ### ⚠ DISCLAIMER
+> ### ⚠ DISCLAIMER & CREDITS
 > **EFTarkov Buddy** is an unofficial, fan-made application. It is not affiliated with, endorsed by, or sponsored by Battlestate Games. *Escape From Tarkov* and all related assets, names, and trademarks belong to **Battlestate Games**.
 > The tactical maps used within this application have been sourced from [Tarkov Market](https://tarkov-market.com/). All credits for the maps belong to their respective creators and platform.
