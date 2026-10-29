@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EFTarkov Buddy - Download</title>
+  <style>
+    :root {
+      --bg: #0e0f10;
+      --card: #15181c;
+      --accent: #ffb74d;
+      --gold: #c2a649;
+      --text: #e0e0e0;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      text-align: center;
+    }
+    header {
+      padding: 60px 20px;
+      background: linear-gradient(180deg, rgba(21, 24, 28, 0.9) 0%, rgba(14, 15, 16, 1) 100%);
+    }
+    h1 {
+      font-size: 3rem;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    p.subtitle {
+      font-size: 1.2rem;
+      color: #8a8f98;
+      max-width: 600px;
+      margin: 0 auto 30px auto;
+    }
+    .btn-download {
+      display: inline-block;
+      background-color: var(--accent);
+      color: #000;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255, 183, 77, 0.4);
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: 50px auto;
+      padding: 0 20px;
+    }
+    .feature-card {
+      background-color: var(--card);
+      border: 1px solid #252a30;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: left;
+    }
+    .feature-card h3 {
+      color: var(--gold);
+      margin-top: 0;
+    }
+    footer {
+      margin-top: 60px;
+      padding: 20px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>EFTarkov Buddy</h1>
+    <p class="subtitle">The ultimate companion app for Escape From Tarkov. Track your side quests, 1.0 main story, Hideout modules, and physical items.</p>
+    
+    <!-- Enlace directo al ejecutable dentro del mismo repositorio -->
+    <a href="./EFTarkov.Buddy_1.0.0_x64-setup.exe" class="btn-download" download>
+      🚀 Download for Windows (v1.0.0)
+    </a>
+  </header>
+
+  <section class="features">
+    <div class="feature-card">
+      <h3>📜 Quest & Main Story Tracker</h3>
+      <p>Keep track of all side quests and 1.0 main story chapters filtered by trader and map.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🏠 Hideout Manager</h3>
+      <p>Manage requirements for all Hideout modules seamlessly.</p>
+    </div>
+    <div class="feature-card">
+      <h3>📦 Item Tracker</h3>
+      <p>Smart filtering system for physical items needed for quests and module upgrades.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🗺️ Maps & Keys</h3>
+      <p>Interactive high-res map view with essential keys list and official Wiki integration.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>EFTarkov Buddy is an unofficial application. Escape from Tarkov is a registered trademark of Battlestate Games.</p>
+  </footer>
+
+</body>
+</html>
