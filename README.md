@@ -76,7 +76,7 @@ Your PC is already busy running Tarkov. Buddy stays small, quick and out of your
 ## `// 04` — DEPLOYMENT
 
 1. Go to the [**Releases**](../../releases) section of this repository.
-2. Download the latest installer: `EFTarkov_Buddy_1.0.0_x64-setup.exe`
+2. Download the latest installer: `EFTarkov_Buddy_1.0.1_x64-setup.exe`
 3. Run the installer and follow the setup wizard.
 4. Launch **EFTarkov Buddy** and start tracking your raid goals.
 
