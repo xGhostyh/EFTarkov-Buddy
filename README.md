@@ -6,7 +6,7 @@
 
 **Know your next objective before you load in.**
 
-`> OPERATION: PREP // v1.0.0 ONLINE`
+`> OPERATION: PREP // v1.0.1 ONLINE`
 
 ![Platform](https://img.shields.io/badge/Platform-Windows_x64-0b0d0a?style=flat-square&logo=windows&logoColor=d2b98a&labelColor=3b4a1f&color=0b0d0a)
 ![Built with Tauri](https://img.shields.io/badge/Tauri-v2-0b0d0a?style=flat-square&logo=tauri&logoColor=d2b98a&labelColor=3b4a1f&color=0b0d0a)
@@ -15,7 +15,7 @@
 
 <br>
 
-[![Download](https://img.shields.io/badge/%E2%AC%87%20DOWNLOAD-v1.0.0_for_Windows-8a9a4a?style=for-the-badge&labelColor=0b0d0a)](../../releases)
+[![Download](https://img.shields.io/badge/%E2%AC%87%20DOWNLOAD-v1.0.1_for_Windows-8a9a4a?style=for-the-badge&labelColor=0b0d0a)](../../releases)
 
 </div>
 
