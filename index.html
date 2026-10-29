@@ -6,9 +6,10 @@
   <title>EFTarkov Buddy - Download</title>
   <style>
     :root {
-      --bg: #0e0f10;
-      --card: #15181c;
-      --accent: #ffb74d;
+      --bg: #0b0d0b;
+      --card: #121613;
+      --accent: #2e5a2e; /* Verde táctico inspirado en la imagen */
+      --accent-hover: #3d753d;
       --gold: #c2a649;
       --text: #e0e0e0;
     }
@@ -21,33 +22,37 @@
     }
     header {
       padding: 60px 20px;
-      background: linear-gradient(180deg, rgba(21, 24, 28, 0.9) 0%, rgba(14, 15, 16, 1) 100%);
+      background: linear-gradient(180deg, rgba(18, 22, 19, 0.95) 0%, rgba(11, 13, 11, 1) 100%);
+      border-bottom: 1px solid rgba(46, 90, 46, 0.3);
     }
     h1 {
       font-size: 3rem;
-      color: var(--accent);
+      color: #3e7e3e; /* Verde destacado */
       margin-bottom: 10px;
+      text-shadow: 0 0 10px rgba(46, 90, 46, 0.4);
     }
     p.subtitle {
       font-size: 1.2rem;
-      color: #8a8f98;
+      color: #8a9f8a;
       max-width: 600px;
       margin: 0 auto 30px auto;
     }
     .btn-download {
       display: inline-block;
       background-color: var(--accent);
-      color: #000;
+      color: #ffffff;
       padding: 14px 28px;
       font-size: 1.1rem;
       font-weight: bold;
       text-decoration: none;
       border-radius: 6px;
-      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid #458245;
+      transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
     }
     .btn-download:hover {
+      background-color: var(--accent-hover);
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(255, 183, 77, 0.4);
+      box-shadow: 0 4px 15px rgba(46, 90, 46, 0.6);
     }
     .features {
       display: grid;
@@ -59,19 +64,19 @@
     }
     .feature-card {
       background-color: var(--card);
-      border: 1px solid #252a30;
+      border: 1px solid #1e361e;
       border-radius: 8px;
       padding: 20px;
       text-align: left;
     }
     .feature-card h3 {
-      color: var(--gold);
+      color: #4c964c;
       margin-top: 0;
     }
     footer {
       margin-top: 60px;
       padding: 20px;
-      color: #666;
+      color: #5d6e5d;
       font-size: 0.9rem;
     }
   </style>
@@ -82,8 +87,7 @@
     <h1>EFTarkov Buddy</h1>
     <p class="subtitle">The ultimate companion app for Escape From Tarkov. Track your side quests, 1.0 main story, Hideout modules, and physical items.</p>
     
-    <!-- Enlace directo al ejecutable dentro del mismo repositorio -->
-    <a href="https://github.com/xGhostyh/EFTarkov-Buddy/releases/tag/v1.0.0" class="btn-download" download>
+    <a href="https://github.com/xGhostyh/EFTarkov-Buddy/releases" class="btn-download" download>
       🚀 Download for Windows (v1.0.0)
     </a>
   </header>
