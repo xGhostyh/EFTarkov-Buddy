@@ -159,7 +159,7 @@ tabs.forEach((t, i) => {
 if (tabs.length) selectTab(0);
 
 /* ---------- Real screenshots replace placeholders automatically ----------
-   Drop files in assets/screenshots/ with the names listed in index.html.
+   Drop files in docs/screenshots/ with the names listed in index.html.
    If a file is missing, the placeholder simply stays. */
 const SHOT_EXTS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG", "WEBP"];
 document.querySelectorAll(".shot[data-src]").forEach((shot) => {
