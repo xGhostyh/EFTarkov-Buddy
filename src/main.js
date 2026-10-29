@@ -22,7 +22,7 @@ async function openExternalUrl(url) {
       await window.__TAURI__.shell.open(url);
       opened = true;
     } else if (window.__TAURI_INTERNALS__ && window.__TAURI_INTERNALS__.plugins && window.__TAURI_INTERNALS__.plugins.shell) {
-      await window.__TAURI_INTERNALS__.plugins.shell.open(url);
+      await window.__TAURI__.plugins.shell.open(url);
       opened = true;
     }
   } catch (err) {
@@ -65,8 +65,8 @@ const STORY_CHAPTERS = [
   "The Ticket",
   "Boreas"
 ];
-const MAIN_MAPS = ["ALL MAPS", "Customs", "Woods", "Factory", "Reserve", "Interchange", "Shoreline", "Streets of Tarkov", "Ground Zero", "Lighthouse", "The Lab", "Varios"];
-const ONLY_MAPS_LIST = ["Customs", "Woods", "Factory", "Reserve", "Interchange", "Shoreline", "Streets of Tarkov", "Ground Zero", "Lighthouse", "The Lab", "Varios"];
+const MAIN_MAPS = ["ALL MAPS", "Customs", "Woods", "Factory", "Reserve", "Interchange", "Shoreline", "Streets of Tarkov", "Ground Zero", "Lighthouse", "The Lab", "Any Location"];
+const ONLY_MAPS_LIST = ["Customs", "Woods", "Factory", "Reserve", "Interchange", "Shoreline", "Streets of Tarkov", "Ground Zero", "Lighthouse", "The Lab"];
 
 const HIDEOUT_MODULES = [
   "All Modules",
@@ -108,8 +108,52 @@ const MAP_IMAGES = {
   "Streets of Tarkov": "./images/streets.png",
   "Ground Zero": "./images/ground_zero.png",
   "Lighthouse": "./images/lighthouse.png",
-  "The Lab": "./images/the_lab.png",
-  "Varios": "./images/varios.png"
+  "The Lab": "./images/the_lab.png"
+};
+
+// Base de datos de 3 plantas para los mapas permitidos (puedes ajustar los nombres de archivo PNG en ./images/)
+const MAP_FLOOR_IMAGES = {
+  "Customs": {
+    "Dorms": "./images/customs_dorms.png",
+    "Main": "./images/customs.png"
+  },
+  "Factory": {
+    "Basement": "./images/factory_b.png",
+    "Main": "./images/factory.png",
+    "Level 2": "./images/factory_floor2.png",
+    "Level 3": "./images/factory_floor3.png"
+  },
+  "Reserve": {
+    "Bunker": "./images/reserve_b.png",
+    "Main": "./images/reserve.png"
+  },
+  "Interchange": {
+    "Ground Floor": "./images/interchange.png",
+    "Level 2": "./images/interchange_2.png",
+    "Level 3": "./images/interchange_3.png"
+  },
+  "Shoreline": {
+    "Resort": "./images/shoreline_r.png",
+    "Floor 2": "./images/shoreline.png",
+  },
+  "The Lab": {
+    "Floor 1": "./images/the_lab_floor1.png",
+    "Floor 2": "./images/the_lab.png",
+    "Floor 3": "./images/the_lab_floor3.png"
+  }
+};
+
+const MAP_WEB_URLS = {
+  "Customs": "https://tarkov-market.com/maps/customs",
+  "Woods": "https://tarkov-market.com/maps/woods",
+  "Factory": "https://tarkov-market.com/maps/factory",
+  "Reserve": "https://tarkov-market.com/maps/reserve",
+  "Interchange": "https://tarkov-market.com/maps/interchange",
+  "Shoreline": "https://tarkov-market.com/maps/shoreline",
+  "Streets of Tarkov": "https://tarkov-market.com/maps/streets",
+  "Ground Zero": "https://tarkov-market.com/maps/ground-zero",
+  "Lighthouse": "https://tarkov-market.com/maps/lighthouse",
+  "The Lab": "https://tarkov-market.com/maps/lab"
 };
 
 const MAP_KEYS_DB = {
@@ -182,8 +226,7 @@ const MAP_KEYS_DB = {
     "Black Keycard",
     "Blue Keycard",
     "Yellow Keycard"
-  ],
-  "Varios": []
+  ]
 };
 
 let tasks = [];
@@ -194,9 +237,11 @@ let selectedTrader = "ALL TRADERS";
 let selectedChapter = "All Chapters";
 let selectedMap = "ALL MAPS";
 let selectedOnlyMap = "Customs";
+let selectedMapFloor = "Floor 2";
 let selectedHideoutModule = "All Modules";
 let statusFilter = "ALL";
 let searchQuery = "";
+let currentLeafletMap = null;
 
 async function init() {
   initTauriApi();
@@ -234,7 +279,7 @@ function showError(msg) {
 
 function normalizeMap(mapStr) {
   if (!mapStr || mapStr.includes("Not specified") || mapStr.includes(",")) {
-    return "Varios";
+    return "Any Location";
   }
   return mapStr.trim();
 }
@@ -245,6 +290,44 @@ async function updateProgress(key, value) {
     await invoke('save_progress', { progress });
   }
   updateCounters();
+}
+
+async function applyQuestReputation(task, isCompleting) {
+  if (!task.rewards || typeof task.rewards !== 'string') return;
+
+  const rewardsLower = task.rewards.toLowerCase();
+  
+  for (const trader of TRADERS) {
+    if (trader === "ALL TRADERS") continue;
+    
+    const traderSearch = `${trader.toLowerCase()} rep`;
+    if (rewardsLower.includes(traderSearch)) {
+      try {
+        const idx = rewardsLower.indexOf(traderSearch);
+        const sub = task.rewards.substring(idx + traderSearch.length).trim();
+        const matchVal = sub.match(/^([+-]?\d*\.?\d+)/);
+        
+        if (matchVal) {
+          const repChangeValue = parseFloat(matchVal[1]);
+          if (!isNaN(repChangeValue)) {
+            const repKey = `trader_rep_${trader}`;
+            let currentRep = parseFloat(progress[repKey]) || 0.00;
+
+            if (isCompleting) {
+              currentRep += repChangeValue;
+            } else {
+              currentRep -= repChangeValue;
+            }
+
+            currentRep = Math.max(0, currentRep);
+            await updateProgress(repKey, currentRep.toFixed(2));
+          }
+        }
+      } catch (e) {
+        console.error("Error al procesar la reputación de la misión:", e);
+      }
+    }
+  }
 }
 
 function setupTypeBar() {
@@ -305,18 +388,33 @@ function renderBars() {
     const activeBtn = statusFilters.querySelector('button[data-filter="ACTIVE"]');
     const availableBtn = statusFilters.querySelector('button[data-filter="AVAILABLE"]');
     const kappaBtn = statusFilters.querySelector('button[data-filter="KAPPA"]');
+    const allBtn = statusFilters.querySelector('button[data-filter="ALL"]');
+    const completedBtn = statusFilters.querySelector('button[data-filter="COMPLETED"]');
 
-    const hideButtons = selectedType === "HIDEOUT" || selectedType === "ITEMS";
+    if (selectedType === "ITEMS") {
+      if (activeBtn) activeBtn.style.display = 'none';
+      if (availableBtn) availableBtn.style.display = 'none';
+      if (kappaBtn) kappaBtn.style.display = 'none';
+      if (allBtn) allBtn.style.display = 'none';
+      if (completedBtn) completedBtn.style.display = 'none';
+    } else if (selectedType === "HIDEOUT") {
+      if (activeBtn) activeBtn.style.display = 'none';
+      if (availableBtn) availableBtn.style.display = 'none';
+      if (kappaBtn) kappaBtn.style.display = 'none';
+      if (allBtn) allBtn.style.display = 'inline-block';
+      if (completedBtn) completedBtn.style.display = 'inline-block';
 
-    if (activeBtn) activeBtn.style.display = hideButtons ? 'none' : 'inline-block';
-    if (availableBtn) availableBtn.style.display = hideButtons ? 'none' : 'inline-block';
-    if (kappaBtn) kappaBtn.style.display = hideButtons ? 'none' : 'inline-block';
-
-    if (hideButtons && (statusFilter === "ACTIVE" || statusFilter === "AVAILABLE" || statusFilter === "KAPPA")) {
-      statusFilter = "ALL";
-      statusFilters.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-      const allBtn = statusFilters.querySelector('button[data-filter="ALL"]');
-      if (allBtn) allBtn.classList.add('active');
+      if (statusFilter === "ACTIVE" || statusFilter === "AVAILABLE" || statusFilter === "KAPPA") {
+        statusFilter = "ALL";
+        statusFilters.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+        if (allBtn) allBtn.classList.add('active');
+      }
+    } else {
+      if (activeBtn) activeBtn.style.display = 'inline-block';
+      if (availableBtn) availableBtn.style.display = 'inline-block';
+      if (kappaBtn) kappaBtn.style.display = 'inline-block';
+      if (allBtn) allBtn.style.display = 'inline-block';
+      if (completedBtn) completedBtn.style.display = 'inline-block';
     }
   }
 
@@ -359,6 +457,7 @@ function renderBars() {
         btn.innerText = m;
         btn.onclick = () => {
           selectedOnlyMap = m;
+          selectedMapFloor = "Floor 2";
           renderBars();
           renderQuests();
         };
@@ -602,37 +701,32 @@ function renderQuests() {
 
   if (selectedType === "PROFILE") {
     const userLevel = progress['player_level'] || 1;
+    const prestigeLevel = progress['player_prestige'] || 0;
     const profileTraders = TRADERS.filter(t => t !== "ALL TRADERS");
 
     container.innerHTML = `
       <div class="profile-container">
-        <div class="level-card">
-          <div class="level-info">
-            <span class="level-label">Level</span>
-            <span class="level-value" id="profile-level-val">${userLevel}</span>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+          <div class="level-card">
+            <div class="level-info">
+              <span class="level-label">Level</span>
+              <span class="level-value" id="profile-level-val">${userLevel}</span>
+            </div>
+            <div class="level-controls">
+              <button class="btn-level" id="btn-level-up">+</button>
+              <button class="btn-level" id="btn-level-down">-</button>
+            </div>
           </div>
-          <div class="level-controls">
-            <button class="btn-level" id="btn-level-up">+</button>
-            <button class="btn-level" id="btn-level-down">-</button>
-          </div>
-        </div>
 
-        <div class="backup-section">
-          <h3>💾 Prestige/Season Reset & Progress Backup</h3>
-          <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
-            Export your progress before the new season/wipe/prestige level or restore a previous backup.
-          </p>
-          <div class="backup-actions">
-            <button class="btn-backup" id="btn-export-progress">
-              📤 Export Backup
-            </button>
-            <button class="btn-backup" id="btn-import-progress">
-              📥 Import Backup
-            </button>
-            <input type="file" id="import-file-input" accept=".json" style="display: none;">
-            <button class="btn-backup btn-danger" id="btn-wipe-reset">
-              ⚠️ Wipe / Reset Progress
-            </button>
+          <div class="level-card">
+            <div class="level-info">
+              <span class="level-label">Prestige</span>
+              <span class="level-value" id="profile-prestige-val" style="color: var(--alert);">${prestigeLevel}</span>
+            </div>
+            <div class="level-controls">
+              <button class="btn-level" id="btn-prestige-up">+</button>
+              <button class="btn-level" id="btn-prestige-down">-</button>
+            </div>
           </div>
         </div>
 
@@ -680,6 +774,25 @@ function renderQuests() {
             `;
           }).join('')}
         </div>
+
+        <div class="backup-section">
+          <h3>💾 Prestige/Season Reset & Progress Backup</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+            Export your progress before the new season/wipe/prestige level or restore a previous backup.
+          </p>
+          <div class="backup-actions">
+            <button class="btn-backup" id="btn-export-progress">
+              📤 Export Backup
+            </button>
+            <button class="btn-backup" id="btn-import-progress">
+              📥 Import Backup
+            </button>
+            <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            <button class="btn-backup btn-danger" id="btn-wipe-reset">
+              ⚠️ Wipe / Reset Progress
+            </button>
+          </div>
+        </div>
       </div>
     `;
 
@@ -697,6 +810,25 @@ function renderQuests() {
         current--;
         levelValElem.innerText = current;
         await updateProgress('player_level', current);
+      }
+    };
+
+    const prestigeValElem = document.getElementById('profile-prestige-val');
+    document.getElementById('btn-prestige-up').onclick = async () => {
+      let current = parseInt(prestigeValElem.innerText, 10);
+      if (current < 6) {
+        current++;
+        prestigeValElem.innerText = current;
+        await updateProgress('player_prestige', current);
+      }
+    };
+
+    document.getElementById('btn-prestige-down').onclick = async () => {
+      let current = parseInt(prestigeValElem.innerText, 10);
+      if (current > 0) {
+        current--;
+        prestigeValElem.innerText = current;
+        await updateProgress('player_prestige', current);
       }
     };
 
@@ -732,7 +864,7 @@ function renderQuests() {
               await invoke('save_progress', { progress });
             }
             renderQuests();
-            showToast("Backup imported successfully!"); // Notificación de importación
+            showToast("Backup imported successfully!");
           } else {
             alert("⚠️ Invalid backup file format.");
           }
@@ -751,7 +883,7 @@ function renderQuests() {
           await invoke('save_progress', { progress });
         }
         renderQuests();
-        showToast("Wipe reset completed successfully!"); // Notificación de reseteo
+        showToast("Wipe reset completed successfully!");
       }
     };
 
@@ -779,46 +911,243 @@ function renderQuests() {
   }
 
   if (selectedType === "MAPS") {
-    const mapImgSrc = MAP_IMAGES[selectedOnlyMap];
+    let mapImgSrc = MAP_IMAGES[selectedOnlyMap] || './images/customs.png';
+    
+    // Si el mapa actual está en la base de datos multi-planta, usamos la planta seleccionada
+    if (MAP_FLOOR_IMAGES[selectedOnlyMap]) {
+      const floors = MAP_FLOOR_IMAGES[selectedOnlyMap];
+      if (!floors[selectedMapFloor]) {
+        selectedMapFloor = Object.keys(floors)[1] || Object.keys(floors)[0];
+      }
+      mapImgSrc = floors[selectedMapFloor];
+    }
+
+    const mapWebUrl = MAP_WEB_URLS[selectedOnlyMap] || "https://tarkov-market.com/maps/";
     const keysList = MAP_KEYS_DB[selectedOnlyMap] || [];
     const wikiUrl = "https://escapefromtarkov.fandom.com/wiki/Keys_%26_Intel#Keys_&_Keycards";
 
+    const mapFilteredQuests = tasks.filter(t => {
+      const taskMap = normalizeMap(t.map);
+      const isCorrectMap = taskMap.toLowerCase() === selectedOnlyMap.toLowerCase();
+      const isPinned = !!progress[`${t.id}_pinned`];
+      return isCorrectMap && isPinned;
+    });
+
     container.innerHTML = `
-      <div class="map-view-card">
-        <div class="map-image-wrapper">
-          ${mapImgSrc ? `
-            <img src="${mapImgSrc}" alt="Mapa de ${selectedOnlyMap}" class="full-map-image" onerror="this.parentElement.innerHTML='<p style=\'color: #ff8282; font-weight: bold; text-align: center; padding: 20px;\'>⚠️ Image not found: ${mapImgSrc}. Place it in src/images/</p>';" />
-          ` : `<p style="color: #888; text-align: center; padding: 20px;">No map configured for this view.</p>`}
+      <div class="map-view-card" style="display: flex; gap: 15px; width: 100%; height: 72vh;">
+        
+        <!-- Contenedor del Mapa Interactivo con Leaflet -->
+        <div style="flex: 1; height: 100%; background: #0b0d0a; border-radius: var(--radius); border: 1px solid var(--line); position: relative; overflow: hidden;">
+          
+          <div id="leaflet-map-container" style="width: 100%; height: 100%; background: #0b0d0a; z-index: 1; cursor: crosshair;"></div>
+          
+          <!-- Selector de Plantas para mapas multi-planta (abajo a la izquierda absoluta sin margen) -->
+          ${MAP_FLOOR_IMAGES[selectedOnlyMap] ? `
+            <div id="map-floor-selector" style="position: absolute; bottom: 0; left: 0; z-index: 1000; display: flex;">
+              ${Object.keys(MAP_FLOOR_IMAGES[selectedOnlyMap]).map((floor, idx) => `
+                <button class="action-btn map-floor-btn ${floor === selectedMapFloor ? 'active' : ''}" data-floor="${floor}" style="background: ${floor === selectedMapFloor ? 'var(--accent-gold, #d2b98a)' : 'rgba(11, 13, 10, 0.9)'}; color: ${floor === selectedMapFloor ? '#000' : '#fff'}; font-weight: bold; padding: 6px 12px; cursor: pointer; border-top-right-radius: ${idx === Object.keys(MAP_FLOOR_IMAGES[selectedOnlyMap]).length - 1 ? '4px' : '0'}; border-bottom-left-radius: ${idx === 0 ? '0' : '0'}; border-top-left-radius: 0; border-bottom-right-radius: 0; border: none; border-right: 1px solid var(--line); box-shadow: 0 -2px 6px rgba(0,0,0,0.4);">
+                  ${floor}
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <!-- Botón Open Web Map ajustado en la esquina derecha e inferior absoluta sin margen -->
+          <div style="position: absolute; bottom: 0; right: 0; z-index: 1000;">
+            <button class="action-btn" id="btn-open-interactive-map" style="background: var(--accent-gold, #d2b98a); color: #000; font-weight: bold; padding: 6px 12px; cursor: pointer; border-top-left-radius: 4px; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border: none; box-shadow: 0 -2px 6px rgba(0,0,0,0.4);">
+              🗺️ Open Web Map (tarkov-market) 🔗
+            </button>
+          </div>
         </div>
 
-        <div class="map-keys-card">
-          <h3>
-            <a href="${wikiUrl}" id="link-important-keys" class="keys-title-link" style="color: var(--accent-gold); text-decoration: none;">
-              🔑 Important Keys 🔗
-            </a>
-          </h3>
-          <div class="keys-list">
-            ${keysList.length > 0 ? keysList.map(keyName => {
-              const keyId = `key_${selectedOnlyMap.replace(/\s+/g, '')}_${keyName.replace(/\s+/g, '')}`;
-              const isChecked = !!progress[keyId];
+        <div class="map-sidebar-panels" style="display: flex; flex-direction: column; gap: 15px; width: 340px; flex-shrink: 0; height: 100%; overflow-y: auto;">
+          
+          <div class="map-keys-card" style="width: 100%;">
+            <h3>
+              <a href="${wikiUrl}" id="link-important-keys" class="keys-title-link" style="color: var(--accent-gold, #d2b98a); text-decoration: none;">
+                🔑 Important Keys 🔗
+              </a>
+            </h3>
+            <div class="keys-list">
+              ${keysList.length > 0 ? keysList.map(keyName => {
+                const keyId = `key_${selectedOnlyMap.replace(/\s+/g, '')}_${keyName.replace(/\s+/g, '')}`;
+                const isChecked = !!progress[keyId];
 
-              return `
-                <label class="key-item" style="color: ${isChecked ? '#4caf50' : '#e0e0e0'}">
-                  <input type="checkbox" data-key="${keyId}" ${isChecked ? 'checked' : ''}>
-                  <span>${keyName}</span>
-                </label>
-              `;
-            }).join('') : `<p style="color: #888; font-size: 0.85rem;">No keys registered for this map.</p>`}
+                return `
+                  <label class="key-item" style="color: ${isChecked ? '#4caf50' : '#e0e0e0'}">
+                    <input type="checkbox" data-key="${keyId}" ${isChecked ? 'checked' : ''}>
+                    <span>${keyName}</span>
+                  </label>
+                `;
+              }).join('') : `<p style="color: #888; font-size: 0.85rem;">No keys registered for this map.</p>`}
+            </div>
           </div>
+
+          <div class="map-quests-card" style="background-color: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; backdrop-filter: blur(4px);">
+            <h3 style="margin: 0;">
+              <a href="#" id="map-quests-title-link" style="font-family: var(--f-head); font-size: 1.15rem; letter-spacing: 0.05em; color: var(--sand, #d2b98a); text-decoration: none; display: block; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+                📌 Active Quests on ${selectedOnlyMap} (${mapFilteredQuests.length}) 🔗
+              </a>
+            </h3>
+            <div class="map-quests-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 25vh; overflow-y: auto;">
+              ${mapFilteredQuests.length > 0 ? mapFilteredQuests.map(quest => {
+                const isQuestDone = !!progress[quest.id];
+                return `
+                  <div class="map-quest-item" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 6px 8px; background-color: rgba(11, 13, 10, 0.8); border-radius: var(--radius); border: 1px solid var(--line); color: ${isQuestDone ? '#4caf50' : '#e0e0e0'};">
+                    <span style="font-family: var(--f-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">${quest.name}</span>
+                    <span style="font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 3px; flex-shrink: 0;">${quest.trader || 'Quest'}</span>
+                  </div>
+                `;
+              }).join('') : `<p style="color: #888; font-size: 0.85rem;">No active (pinned) quests for this map.</p>`}
+            </div>
+          </div>
+
         </div>
       </div>
     `;
+
+    if (MAP_FLOOR_IMAGES[selectedOnlyMap]) {
+      container.querySelectorAll('.map-floor-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          selectedMapFloor = e.target.dataset.floor;
+          renderQuests();
+        };
+      });
+    }
+
+    setTimeout(() => {
+      if (currentLeafletMap) {
+        currentLeafletMap.remove();
+        currentLeafletMap = null;
+      }
+
+      const mapElement = document.getElementById('leaflet-map-container');
+      if (mapElement) {
+        currentLeafletMap = L.map('leaflet-map-container', {
+          crs: L.CRS.Simple,
+          minZoom: -5,
+          maxZoom: 3,
+          zoomControl: true,
+          zoomDelta: 0.25,
+          zoomSnap: 0.25,
+          scrollWheelZoom: 'center',
+          wheelPxPerZoomLevel: 120
+        });
+
+        const img = new Image();
+        img.src = mapImgSrc;
+        img.onload = () => {
+          const w = img.naturalWidth || 4096;
+          const h = img.naturalHeight || 4096;
+          const bounds = [[0, 0], [h, w]];
+          
+          L.imageOverlay(mapImgSrc, bounds).addTo(currentLeafletMap);
+
+          const containerWidth = mapElement.clientWidth || 800;
+          const containerHeight = mapElement.clientHeight || 600;
+          const scaleX = containerWidth / w;
+          const scaleY = containerHeight / h;
+          const minScale = Math.min(scaleX, scaleY);
+          const dynamicMinZoom = Math.log2(minScale);
+
+          currentLeafletMap.setMinZoom(dynamicMinZoom);
+          currentLeafletMap.setMaxBounds([[-h * 0.1, -w * 0.1], [h * 1.1, w * 1.1]]);
+          currentLeafletMap.fitBounds(bounds);
+
+          const zoomControlContainer = document.querySelector('.leaflet-top.leaflet-left');
+          if (zoomControlContainer && !document.getElementById('leaflet-instruction-badge')) {
+            const hintDiv = document.createElement('div');
+            hintDiv.id = 'leaflet-instruction-badge';
+            hintDiv.style.cssText = 'display: inline-block; background: rgba(11, 13, 10, 0.9); border: 1px solid var(--line); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; color: var(--accent-gold, #d2b98a); margin-left: 8px; vertical-align: middle; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: none;';
+            hintDiv.innerHTML = '💡 Click anywhere on the map to add a custom pin.';
+            zoomControlContainer.appendChild(hintDiv);
+          }
+
+          const currentFloorKey = MAP_FLOOR_IMAGES[selectedOnlyMap] ? selectedMapFloor : 'main';
+          const customPinsKey = `custom_pins_${selectedOnlyMap}_${currentFloorKey}`;
+          const savedPins = progress[customPinsKey] || [];
+
+          savedPins.forEach((pin, index) => {
+            const customIcon = L.divIcon({
+              className: 'custom-map-pin-wrapper',
+              html: `<div style="color: #fff; font-family: var(--f-mono); font-size: 12px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.9), -1px -1px 3px rgba(0,0,0,0.9); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">
+                      <span>📌 ${pin.text}</span>
+                      <span style="background: rgba(0,0,0,0.7); padding: 0 4px; border-radius: 2px; cursor: pointer; color: #ff8282; font-size: 10px;" title="Delete pin" onclick="window.deleteCustomPin('${selectedOnlyMap}', '${currentFloorKey}', ${index})">✕</span>
+                    </div>`,
+              iconSize: null,
+              iconAnchor: [0, 12]
+            });
+
+            L.marker([pin.lat, pin.lng], { icon: customIcon }).addTo(currentLeafletMap);
+          });
+
+          currentLeafletMap.on('click', async (e) => {
+            const pinText = prompt("Introduce el nombre de la misión u objetivo para este pin:");
+            if (!pinText || !pinText.trim()) return;
+
+            const newPin = {
+              lat: e.latlng.lat,
+              lng: e.latlng.lng,
+              text: pinText.trim()
+            };
+
+            if (!progress[customPinsKey]) {
+              progress[customPinsKey] = [];
+            }
+            progress[customPinsKey].push(newPin);
+
+            await updateProgress(customPinsKey, progress[customPinsKey]);
+            renderQuests();
+            showToast("Pin añadido correctamente");
+          });
+
+        };
+        img.onerror = () => {
+          mapElement.innerHTML = `<div style="color: #ff8282; font-weight: bold; text-align: center; padding: 40px;">⚠️ Image not found: ${mapImgSrc}. Place it in src/images/</div>`;
+        };
+      }
+    }, 50);
+
+    window.deleteCustomPin = async (mapName, floorName, pinIndex) => {
+      const customPinsKey = `custom_pins_${mapName}_${floorName}`;
+      if (progress[customPinsKey]) {
+        progress[customPinsKey].splice(pinIndex, 1);
+        await updateProgress(customPinsKey, progress[customPinsKey]);
+        renderQuests();
+        showToast("Pin eliminado");
+      }
+    };
+
+    const interactiveMapBtn = document.getElementById('btn-open-interactive-map');
+    if (interactiveMapBtn) {
+      interactiveMapBtn.onclick = (e) => {
+        e.preventDefault();
+        openExternalUrl(mapWebUrl);
+      };
+    }
 
     const keysTitleLink = document.getElementById('link-important-keys');
     if (keysTitleLink) {
       keysTitleLink.onclick = (e) => {
         e.preventDefault();
         openExternalUrl(wikiUrl);
+      };
+    }
+
+    const mapQuestsTitleLink = document.getElementById('map-quests-title-link');
+    if (mapQuestsTitleLink) {
+      mapQuestsTitleLink.onclick = (e) => {
+        e.preventDefault();
+        selectedType = "SIDE";
+        selectedMap = selectedOnlyMap;
+        statusFilter = "ACTIVE";
+        
+        document.querySelectorAll('#type-bar .nav-btn').forEach(b => {
+          b.classList.toggle('selected-type', b.dataset.type === "SIDE");
+        });
+
+        renderBars();
+        renderQuests();
       };
     }
 
@@ -850,8 +1179,16 @@ function renderQuests() {
     } else if (selectedType === "HIDEOUT") {
       if (selectedHideoutModule !== "All Modules") {
         const target = selectedHideoutModule.toLowerCase().trim();
-        const fields = [t.chapter, t.name, t.trader, t.id].filter(Boolean).map(s => String(s).toLowerCase().trim());
-        if (!fields.some(val => val.includes(target))) return false;
+        const fields = [t.chapter, t.name, t.trader, t.id].filter(Boolean);
+        const matches = fields.some(val => {
+          const s = String(val).toLowerCase().trim();
+          if (target === "generator") {
+            return s === "generator" || s.startsWith("generator level") || (s.includes("generator") && !s.includes("booze"));
+          }
+          return s.includes(target);
+        });
+
+        if (!matches) return false;
       }
     }
 
@@ -936,7 +1273,9 @@ function renderQuests() {
     const completeBtn = card.querySelector('.btn-complete');
     if (completeBtn) {
       completeBtn.onclick = async () => {
-        await updateProgress(task.id, !isCompleted);
+        const willBeCompleted = !isCompleted;
+        await updateProgress(task.id, willBeCompleted);
+        await applyQuestReputation(task, willBeCompleted);
         renderQuests();
       };
     }
@@ -963,11 +1302,30 @@ function renderQuests() {
 
     card.querySelectorAll('input[type="checkbox"]').forEach(chk => {
       chk.onchange = async (e) => {
-        await updateProgress(e.target.dataset.key, e.target.checked);
+        const checkboxKey = e.target.dataset.key;
+        await updateProgress(checkboxKey, e.target.checked);
+        
         const parentLabel = e.target.parentElement;
         if (parentLabel) {
           const isOpt = parentLabel.classList.contains('optional-objective');
           parentLabel.style.color = e.target.checked ? '#5c6370' : (isOpt ? '#9a9a9a' : '#e0e0e0');
+        }
+
+        const allCheckboxesInCard = card.querySelectorAll('.objectives-list input[type="checkbox"]');
+        if (allCheckboxesInCard.length > 0) {
+          const allChecked = Array.from(allCheckboxesInCard).every(box => box.checked);
+          const isTaskCurrentlyDone = !!progress[task.id];
+
+          if (allChecked && !isTaskCurrentlyDone) {
+            await updateProgress(task.id, true);
+            await applyQuestReputation(task, true);
+            showToast(`¡Misión "${task.name}" completada automáticamente!`);
+            renderQuests();
+          } else if (!allChecked && isTaskCurrentlyDone) {
+            await updateProgress(task.id, false);
+            await applyQuestReputation(task, false);
+            renderQuests();
+          }
         }
       };
     });
