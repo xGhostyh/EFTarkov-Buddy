@@ -1,0 +1,766 @@
+[
+  {
+    "id": "Air_Filtering_Unit_1",
+    "name": "Air Filtering Unit Level 1",
+    "chapter": "Air Filtering Unit",
+    "requirements": [
+      "25,000 Dollars",
+      "5x Military power filter",
+      "5x Gas mask air filter (FIR)",
+      "10x Military corrugated tube"
+    ]
+  },
+  {
+    "id": "Bitcoin_Farm_1",
+    "name": "Bitcoin Farm Level 1",
+    "chapter": "Bitcoin Farm",
+    "requirements": [
+      "15x CPU fan",
+      "10x Power supply unit (FIR)",
+      "15x Power cord",
+      "2x VPX Flash Storage Module",
+      "10x T-Shaped plug"
+    ]
+  },
+  {
+    "id": "Bitcoin_Farm_2",
+    "name": "Bitcoin Farm Level 2",
+    "chapter": "Bitcoin Farm",
+    "requirements": [
+      "15x CPU fan",
+      "10x Power supply unit",
+      "15x Printed circuit board (FIR)",
+      "10x Phase control relay",
+      "5x Military power filter"
+    ]
+  },
+  {
+    "id": "Bitcoin_Farm_3",
+    "name": "Bitcoin Farm Level 3",
+    "chapter": "Bitcoin Farm",
+    "requirements": [
+      "25x CPU fan (FIR)",
+      "15x Silicone tube",
+      "10x Electric motor",
+      "10x Pressure gauge",
+      "2x 6-STEN-140-M military battery"
+    ]
+  },
+  {
+    "id": "Booze_Generator_1",
+    "name": "Booze Generator Level 1",
+    "chapter": "Booze Generator",
+    "requirements": [
+      "10x Silicone tube",
+      "2x Analog thermometer (FIR)",
+      "2x Pressure gauge (FIR)",
+      "10x Corrugated hose",
+      "1x Pipe grip wrench (FIR)",
+      "5x Radiator helix",
+      "5x Metal spare parts"
+    ]
+  },
+  {
+    "id": "Cultist_Circle_1",
+    "name": "Cultist Circle Level 1",
+    "chapter": "Cultist Circle",
+    "requirements": [
+      "1x WI-FI Camera",
+      "1x Construction measuring tape (FIR)",
+      "1x SurvL Survivor Lighter (FIR)",
+      "3x Can of white salt (FIR)",
+      "5x Light bulb (FIR)",
+      "1x PAID AntiRoach spray (FIR)"
+    ]
+  },
+  {
+    "id": "Defective_Wall_1",
+    "name": "Defective Wall Level 1",
+    "chapter": "Defective Wall",
+    "requirements": [
+      "1x Fleece fabric",
+      "Mop the floor"
+    ]
+  },
+  {
+    "id": "Defective_Wall_4",
+    "name": "Defective Wall Level 4",
+    "chapter": "Defective Wall",
+    "requirements": [
+      "1x Fierce Blow sledgehammer"
+    ]
+  },
+  {
+    "id": "Defective_Wall_5",
+    "name": "Defective Wall Level 5",
+    "chapter": "Defective Wall",
+    "requirements": [
+      "1x Metal cutting scissors",
+      "1x Toolset"
+    ]
+  },
+  {
+    "id": "Defective_Wall_6",
+    "name": "Defective Wall Level 6",
+    "chapter": "Defective Wall",
+    "requirements": [
+      "2x Corrugated hose",
+      "1x Duct tape",
+      "1x Toolset",
+      "1x Pliers Elite",
+      "5x Metal spare parts",
+      "1x Xenomorph sealing foam",
+      "2x Bundle of wires",
+      "2x Light bulb"
+    ]
+  },
+  {
+    "id": "Gear_Rack_1",
+    "name": "Gear Rack Level 1",
+    "chapter": "Gear Rack",
+    "requirements": [
+      "300,000 Roubles",
+      "1x Leatherman Multitool",
+      "10x Fleece fabric",
+      "1x Sewing kit (FIR)",
+      "8x Energy-saving lamp",
+      "15x Bolts",
+      "1x Awl (FIR)",
+      "1x Electric drill (FIR)"
+    ]
+  },
+  {
+    "id": "Gear_Rack_2",
+    "name": "Gear Rack Level 2",
+    "chapter": "Gear Rack",
+    "requirements": [
+      "800,000 Roubles",
+      "1x Wrench (FIR)",
+      "10x Aramid fiber fabric",
+      "12x Energy-saving lamp",
+      "8x Pack of nails",
+      "5x Shustrilo sealing foam",
+      "5x Duct tape",
+      "1x Electric drill (FIR)"
+    ]
+  },
+  {
+    "id": "Gear_Rack_3",
+    "name": "Gear Rack Level 3",
+    "chapter": "Gear Rack",
+    "requirements": [
+      "1,200,000 Roubles",
+      "1x Ratchet wrench (FIR)",
+      "1x Set of files \"Master\" (FIR)",
+      "15x Energy-saving lamp",
+      "10x KEKTAPE duct tape",
+      "15x Metal spare parts",
+      "10x Cordura polyamide fabric",
+      "1x Body armor repair kit (FIR)"
+    ]
+  },
+  {
+    "id": "Generator_1",
+    "name": "Generator Level 1",
+    "chapter": "Generator",
+    "requirements": [
+      "100,000 Roubles",
+      "1x Spark plug"
+    ]
+  },
+  {
+    "id": "Generator_2",
+    "name": "Generator Level 2",
+    "chapter": "Generator",
+    "requirements": [
+      "10x Phase control relay",
+      "1x Electric motor",
+      "15x Bundle of wires",
+      "1x Bulbex cable cutter"
+    ]
+  },
+  {
+    "id": "Generator_3",
+    "name": "Generator Level 3",
+    "chapter": "Generator",
+    "requirements": [
+      "12x Phase control relay",
+      "3x Electric motor (FIR)",
+      "16x Spark plug",
+      "5x Power supply unit (FIR)",
+      "10x Metal spare parts"
+    ]
+  },
+  {
+    "id": "Gym_1",
+    "name": "Gym Level 1",
+    "chapter": "Gym",
+    "requirements": [
+      "1x Toolset (FIR)",
+      "1x Electric drill (FIR)",
+      "1x Metal cutting scissors (FIR)",
+      "5x Screw nuts",
+      "5x Bolts",
+      "1x WD-40 (100ml)",
+      "5x Insulating tape"
+    ]
+  },
+  {
+    "id": "Hall_of_Fame_1",
+    "name": "Hall of Fame Level 1",
+    "chapter": "Hall of Fame",
+    "requirements": [
+      "1x Round pliers (FIR)",
+      "5x Fleece fabric",
+      "1x Cat figurine (FIR)",
+      "5x Light bulb",
+      "5x Pack of nails",
+      "5x Insulating tape"
+    ]
+  },
+  {
+    "id": "Hall_of_Fame_2",
+    "name": "Hall of Fame Level 2",
+    "chapter": "Hall of Fame",
+    "requirements": [
+      "1x Tech manual (FIR)",
+      "1x Pliers Elite (FIR)",
+      "1x Toolset (FIR)",
+      "1x Golden rooster figurine (FIR)",
+      "10x Energy-saving lamp",
+      "6x Pack of screws",
+      "3x Duct tape",
+      "5x Xenomorph sealing foam",
+      "2x Tube of Poxeram cold welding"
+    ]
+  },
+  {
+    "id": "Hall_of_Fame_3",
+    "name": "Hall of Fame Level 3",
+    "chapter": "Hall of Fame",
+    "requirements": [
+      "1x Set of files \"Master\" (FIR)",
+      "1x Electric drill (FIR)",
+      "1x Bronze lion figurine (FIR)",
+      "15x Energy-saving lamp",
+      "3x KEKTAPE duct tape (FIR)",
+      "6x T-Shaped plug",
+      "15x Metal spare parts",
+      "5x Power cord"
+    ]
+  },
+  {
+    "id": "Heating_1",
+    "name": "Heating Level 1",
+    "chapter": "Heating",
+    "requirements": [
+      "25,000 Roubles",
+      "2x Classic matches"
+    ]
+  },
+  {
+    "id": "Heating_2",
+    "name": "Heating Level 2",
+    "chapter": "Heating",
+    "requirements": [
+      "50,000 Roubles",
+      "2x Hunting matches",
+      "5x Dry fuel",
+      "5x Crickent lighter"
+    ]
+  },
+  {
+    "id": "Heating_3",
+    "name": "Heating Level 3",
+    "chapter": "Heating",
+    "requirements": [
+      "10x Radiator helix",
+      "10x Bundle of wires",
+      "4x Phase control relay (FIR)",
+      "2x Military corrugated tube (FIR)"
+    ]
+  },
+  {
+    "id": "Illumination_1",
+    "name": "Illumination Level 1",
+    "chapter": "Illumination",
+    "requirements": [
+      "10,000 Roubles",
+      "1x Crickent lighter"
+    ]
+  },
+  {
+    "id": "Illumination_2",
+    "name": "Illumination Level 2",
+    "chapter": "Illumination",
+    "requirements": [
+      "14x Light bulb",
+      "10x Bundle of wires"
+    ]
+  },
+  {
+    "id": "Illumination_3",
+    "name": "Illumination Level 3",
+    "chapter": "Illumination",
+    "requirements": [
+      "50,000 Roubles",
+      "7x Capacitors (FIR)",
+      "12x Bundle of wires",
+      "12x Energy-saving lamp"
+    ]
+  },
+  {
+    "id": "Intelligence_Center_1",
+    "name": "Intelligence Center Level 1",
+    "chapter": "Intelligence Center",
+    "requirements": [
+      "1x Intelligence folder",
+      "1x Topographic survey maps",
+      "1x Factory plan map",
+      "1x Working LCD",
+      "1x Power cord"
+    ]
+  },
+  {
+    "id": "Intelligence_Center_2",
+    "name": "Intelligence Center Level 2",
+    "chapter": "Intelligence Center",
+    "requirements": [
+      "3x Intelligence folder",
+      "3x Secure Flash drive",
+      "7x Power cord",
+      "8x Damaged hard drive"
+    ]
+  },
+  {
+    "id": "Intelligence_Center_3",
+    "name": "Intelligence Center Level 3",
+    "chapter": "Intelligence Center",
+    "requirements": [
+      "2x Military COFDM Wireless Signal Transmitter (FIR)",
+      "2x VPX Flash Storage Module",
+      "8x Military flash drive",
+      "8x Military cable",
+      "2x Secure magnetic tape cassette",
+      "1x Far-forward GPS Signal Amplifier Unit"
+    ]
+  },
+  {
+    "id": "Lavatory_1",
+    "name": "Lavatory Level 1",
+    "chapter": "Lavatory",
+    "requirements": [
+      "2,000 Roubles",
+      "1x Toilet paper",
+      "1x Toothpaste",
+      "1x Soap",
+      "1x Awl"
+    ]
+  },
+  {
+    "id": "Lavatory_2",
+    "name": "Lavatory Level 2",
+    "chapter": "Lavatory",
+    "requirements": [
+      "6x Corrugated hose",
+      "6x Pack of screws",
+      "1x Electric drill",
+      "3x KEKTAPE duct tape",
+      "2x Sewing kit"
+    ]
+  },
+  {
+    "id": "Lavatory_3",
+    "name": "Lavatory Level 3",
+    "chapter": "Lavatory",
+    "requirements": [
+      "10x Corrugated hose",
+      "2x Pressure gauge (FIR)",
+      "1x Toolset (FIR)",
+      "6x Xenomorph sealing foam"
+    ]
+  },
+  {
+    "id": "Library_1",
+    "name": "Library Level 1",
+    "chapter": "Library",
+    "requirements": [
+      "400,000 Roubles",
+      "1x Horse figurine (FIR)",
+      "2x Chainlet (FIR)",
+      "8x Tech manual",
+      "5x Diary",
+      "5x Slim diary",
+      "1x BakeEzy cook book (FIR)"
+    ]
+  },
+  {
+    "id": "Medstation_1",
+    "name": "Medstation Level 1",
+    "chapter": "Medstation",
+    "requirements": [
+      "50,000 Roubles",
+      "1x Disposable syringe",
+      "1x Pile of meds",
+      "2x Aseptic bandage",
+      "1x Bottle of OLOLO Multivitamins"
+    ]
+  },
+  {
+    "id": "Medstation_2",
+    "name": "Medstation Level 2",
+    "chapter": "Medstation",
+    "requirements": [
+      "150,000 Roubles",
+      "2x Medical bloodset",
+      "6x Bottle of saline solution",
+      "10x Esmarch tourniquet",
+      "3x Medical tools"
+    ]
+  },
+  {
+    "id": "Medstation_3",
+    "name": "Medstation Level 3",
+    "chapter": "Medstation",
+    "requirements": [
+      "500,000 Roubles",
+      "10x Bottle of saline solution",
+      "1x LEDX Skin Transilluminator",
+      "1x Ophthalmoscope (FIR)"
+    ]
+  },
+  {
+    "id": "Nutrition_Unit_1",
+    "name": "Nutrition Unit Level 1",
+    "chapter": "Nutrition Unit",
+    "requirements": [
+      "25,000 Roubles",
+      "2x Phase control relay",
+      "1x Power cord",
+      "1x Can of white salt"
+    ]
+  },
+  {
+    "id": "Nutrition_Unit_2",
+    "name": "Nutrition Unit Level 2",
+    "chapter": "Nutrition Unit",
+    "requirements": [
+      "4x Wrench",
+      "4x Corrugated hose",
+      "2x Alkaline cleaner for heat exchangers",
+      "3x Phase control relay"
+    ]
+  },
+  {
+    "id": "Nutrition_Unit_3",
+    "name": "Nutrition Unit Level 3",
+    "chapter": "Nutrition Unit",
+    "requirements": [
+      "125,000 Roubles",
+      "5x Can of Majaica coffee beans",
+      "5x Pack of sodium bicarbonate",
+      "2x Smoked Chimney drain cleaner (FIR)"
+    ]
+  },
+  {
+    "id": "Rest_Space_1",
+    "name": "Rest Space Level 1",
+    "chapter": "Rest Space",
+    "requirements": [
+      "10,000 Roubles",
+      "1x Duct tape",
+      "1x Classic matches"
+    ]
+  },
+  {
+    "id": "Rest_Space_2",
+    "name": "Rest Space Level 2",
+    "chapter": "Rest Space",
+    "requirements": [
+      "75,000 Roubles",
+      "1x DVD drive",
+      "1x Magnet",
+      "5x Energy-saving lamp"
+    ]
+  },
+  {
+    "id": "Rest_Space_3",
+    "name": "Rest Space Level 3",
+    "chapter": "Rest Space",
+    "requirements": [
+      "5x Power cord",
+      "5x Capacitors",
+      "10x Bundle of wires",
+      "4x GreenBat lithium battery"
+    ]
+  },
+  {
+    "id": "Scav_Case_1",
+    "name": "Scav Case Level 1",
+    "chapter": "Scav Case",
+    "requirements": [
+      "3x Bronze lion figurine (FIR)",
+      "6x Gold skull ring (FIR)",
+      "8x Golden neck chain (FIR)",
+      "4x Roler Submariner gold wrist watch (FIR)",
+      "3x Bottle of Fierce Hatchling moonshine (FIR)",
+      "1x Lucky Scav Junk box",
+      "1x Golden rooster figurine (FIR)"
+    ]
+  },
+  {
+    "id": "Security_1",
+    "name": "Security Level 1",
+    "chapter": "Security",
+    "requirements": [
+      "20,000 Roubles",
+      "1x Construction measuring tape"
+    ]
+  },
+  {
+    "id": "Security_2",
+    "name": "Security Level 2",
+    "chapter": "Security",
+    "requirements": [
+      "45,000 Roubles",
+      "1x Pliers Elite",
+      "2x WD-40 (100ml)",
+      "2x TP-200 TNT brick"
+    ]
+  },
+  {
+    "id": "Security_3",
+    "name": "Security Level 3",
+    "chapter": "Security",
+    "requirements": [
+      "2x Working LCD (FIR)",
+      "10x Bundle of wires",
+      "8x NIXXOR lens",
+      "1x SSD drive (FIR)"
+    ]
+  },
+  {
+    "id": "Shooting_Range_1",
+    "name": "Shooting Range Level 1",
+    "chapter": "Shooting Range",
+    "requirements": [
+      "20,000 Roubles",
+      "1x Screw nuts",
+      "1x Bolts",
+      "1x Metal spare parts"
+    ]
+  },
+  {
+    "id": "Shooting_Range_2",
+    "name": "Shooting Range Level 2",
+    "chapter": "Shooting Range",
+    "requirements": [
+      "1x Toolset (FIR)",
+      "8x Metal spare parts",
+      "1x Construction measuring tape (FIR)",
+      "6x Bundle of wires",
+      "3x Pack of screws",
+      "3x Tube of Poxeram cold welding",
+      "3x Electric motor (FIR)",
+      "6x Energy-saving lamp",
+      "3x WI-FI Camera",
+      "1x Electric drill (FIR)"
+    ]
+  },
+  {
+    "id": "Shooting_Range_3",
+    "name": "Shooting Range Level 3",
+    "chapter": "Shooting Range",
+    "requirements": [
+      "1x Set of files \"Master\" (FIR)",
+      "10x Bundle of wires",
+      "5x Printed circuit board",
+      "5x Metal spare parts",
+      "5x Capacitors",
+      "5x Phase control relay",
+      "5x Power cord",
+      "1x Leatherman Multitool",
+      "1x Tech manual (FIR)"
+    ]
+  },
+  {
+    "id": "Solar_Power_1",
+    "name": "Solar Power Level 1",
+    "chapter": "Solar Power",
+    "requirements": [
+      "10x Military cable",
+      "6x Phased array element",
+      "4x Advanced current converter"
+    ]
+  },
+  {
+    "id": "Stash_1",
+    "name": "Stash Level 1",
+    "chapter": "Stash",
+    "requirements": [
+      "Default level"
+    ]
+  },
+  {
+    "id": "Stash_2",
+    "name": "Stash Level 2",
+    "chapter": "Stash",
+    "requirements": [
+      "2,500,000 Roubles",
+      "1x Hand drill",
+      "5x Pack of screws",
+      "15x WD-40 (100ml)"
+    ]
+  },
+  {
+    "id": "Stash_3",
+    "name": "Stash Level 3",
+    "chapter": "Stash",
+    "requirements": [
+      "8,500,000 Roubles",
+      "2x Electric drill",
+      "8x Pack of screws"
+    ]
+  },
+  {
+    "id": "Stash_4",
+    "name": "Stash Level 4",
+    "chapter": "Stash",
+    "requirements": [
+      "200,000 Euros",
+      "1x Construction measuring tape",
+      "1x Toolset"
+    ]
+  },
+  {
+    "id": "Vents_1",
+    "name": "Vents Level 1",
+    "chapter": "Vents",
+    "requirements": [
+      "25,000 Roubles"
+    ]
+  },
+  {
+    "id": "Vents_2",
+    "name": "Vents Level 2",
+    "chapter": "Vents",
+    "requirements": [
+      "1x CPU fan",
+      "1x Car battery",
+      "1x Electric motor"
+    ]
+  },
+  {
+    "id": "Vents_3",
+    "name": "Vents Level 3",
+    "chapter": "Vents",
+    "requirements": [
+      "1x Bulbex cable cutter",
+      "10x Phase control relay",
+      "1x Electric motor",
+      "15x Bundle of wires"
+    ]
+  },
+  {
+    "id": "Water_Collector_1",
+    "name": "Water Collector Level 1",
+    "chapter": "Water Collector",
+    "requirements": [
+      "3x Duct tape",
+      "5x Screw nuts",
+      "5x Bolts",
+      "4x Corrugated hose"
+    ]
+  },
+  {
+    "id": "Water_Collector_2",
+    "name": "Water Collector Level 2",
+    "chapter": "Water Collector",
+    "requirements": [
+      "10x Silicone tube",
+      "2x Analog thermometer",
+      "2x Pressure gauge",
+      "10x Corrugated hose",
+      "1x Pipe grip wrench",
+      "5x Radiator helix",
+      "5x Metal spare parts"
+    ]
+  },
+  {
+    "id": "Water_Collector_3",
+    "name": "Water Collector Level 3",
+    "chapter": "Water Collector",
+    "requirements": [
+      "25x CPU fan",
+      "15x Silicone tube",
+      "10x Electric motor",
+      "10x Pressure gauge",
+      "2x 6-STEN-140-M military battery"
+    ]
+  },
+  {
+    "id": "Weapon_Rack_1",
+    "name": "Weapon Rack Level 1",
+    "chapter": "Weapon Rack",
+    "requirements": [
+      "1x Toolset",
+      "5x Metal spare parts",
+      "5x Pack of nails"
+    ]
+  },
+  {
+    "id": "Weapon_Rack_2",
+    "name": "Weapon Rack Level 2",
+    "chapter": "Weapon Rack",
+    "requirements": [
+      "10x KEKTAPE duct tape",
+      "10x Metal spare parts",
+      "3x Pack of screws"
+    ]
+  },
+  {
+    "id": "Weapon_Rack_3",
+    "name": "Weapon Rack Level 3",
+    "chapter": "Weapon Rack",
+    "requirements": [
+      "5x Pliers Elite (FIR)",
+      "10x Silicon tube",
+      "5x Metal spare parts"
+    ]
+  },
+  {
+    "id": "Workbench_1",
+    "name": "Workbench Level 1",
+    "chapter": "Workbench",
+    "requirements": [
+      "2x Screw nuts",
+      "2x Bolts",
+      "1x Leatherman Multitool"
+    ]
+  },
+  {
+    "id": "Workbench_2",
+    "name": "Workbench Level 2",
+    "chapter": "Workbench",
+    "requirements": [
+      "1x Set of files \"Master\"",
+      "1x Electric drill",
+      "1x Hand drill",
+      "5x Bolts",
+      "5x Screw nuts",
+      "2x Toolset"
+    ]
+  },
+  {
+    "id": "Workbench_3",
+    "name": "Workbench Level 3",
+    "chapter": "Workbench",
+    "requirements": [
+      "195,000 Roubles",
+      "2x Pliers Elite",
+      "1x FireKlean gun lube",
+      "2x Printed circuit board",
+      "1x Weapon parts"
+    ]
+  }
+]

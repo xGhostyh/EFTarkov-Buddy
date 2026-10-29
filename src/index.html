@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarkov Buddy</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="main.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="top-line">
+      <h1>EFTarkov Buddy</h1>
+    </div>
+
+    <!-- Main Navigation: Quest / View Type -->
+    <div class="nav-section">
+      <div class="nav-title">NAVIGATION:</div>
+      <div id="type-bar" class="wrap-bar">
+        <button class="nav-btn selected-type" data-type="SIDE">Side Quests</button>
+        <button class="nav-btn" data-type="MAIN">Main Story (1.0)</button>
+        <button class="nav-btn" data-type="MAPS">Maps</button>
+        <button class="nav-btn" data-type="HIDEOUT">Hideout</button>
+        <button class="nav-btn" data-type="ITEMS">Item Tracker</button>
+        <button class="nav-btn" data-type="PROFILE">Profile</button>
+      </div>
+    </div>
+
+    <!-- Filters for Side Quests (Traders and Maps) -->
+    <div id="side-filters-container">
+      <div class="nav-section">
+        <div class="nav-title">TRADERS:</div>
+        <div id="trader-bar" class="wrap-bar"></div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">MAP:</div>
+        <div id="map-bar" class="wrap-bar"></div>
+      </div>
+    </div>
+
+    <!-- Filters for Main Story (Chapters) -->
+    <div id="main-filters-container" style="display: none;">
+      <div class="nav-section">
+        <div class="nav-title">CHAPTER:</div>
+        <div id="chapter-bar" class="wrap-bar"></div>
+      </div>
+    </div>
+
+    <!-- Filters for Maps Tab -->
+    <div id="maps-filters-container" style="display: none;">
+      <div class="nav-section">
+        <div class="nav-title">MAP:</div>
+        <div id="maps-only-bar" class="wrap-bar"></div>
+      </div>
+    </div>
+
+    <!-- Filters for Hideout Tab -->
+    <div id="hideout-filters-container" style="display: none;">
+      <div class="nav-section">
+        <div class="nav-title">MODULE:</div>
+        <div id="hideout-bar" class="wrap-bar"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Search Bar & Status Filters -->
+  <div class="controls-bar">
+    <div id="status-filters">
+      <input type="text" id="search-input" placeholder="Search quests or objectives...">
+      <button class="btn-filter active" data-filter="ALL">All</button>
+      <button class="btn-filter" data-filter="ACTIVE">Active</button>
+      <button class="btn-filter" data-filter="AVAILABLE">Available</button>
+      <button class="btn-filter btn-kappa" data-filter="KAPPA">Kappa</button>
+      <button class="btn-filter" data-filter="COMPLETED">Completed</button>
+      <div id="global-stats">Total: 0 / 0 (0.0%)</div>
+    </div>
+  </div>
+
+  <!-- Main Container for Cards / Maps / Hideout -->
+  <main id="quests-container"></main>
+
+</body>
+</html>
