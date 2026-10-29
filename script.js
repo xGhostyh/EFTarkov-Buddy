@@ -5,7 +5,7 @@
 /* ---------- CONFIG: edit these before publishing ---------- */
 const CONFIG = {
   // Replace YOUR_USER / YOUR_REPO with your real GitHub path.
-  repo: "https://github.com/YOUR_USER/YOUR_REPO",
+  repo: "https://github.com/xGhostyh/EFTarkov-Buddy",
   version: "1.0.0",
 };
 CONFIG.releases = CONFIG.repo + "/releases";
