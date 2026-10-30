@@ -111,7 +111,6 @@ const MAP_IMAGES = {
   "The Lab": "./images/the_lab.png"
 };
 
-// Base de datos de 3 plantas para los mapas permitidos (puedes ajustar los nombres de archivo PNG en ./images/)
 const MAP_FLOOR_IMAGES = {
   "Customs": {
     "Dorms": "./images/customs_dorms.png",
@@ -380,44 +379,34 @@ function renderBars() {
   const mainFilters = document.getElementById('main-filters-container');
   const mapsFilters = document.getElementById('maps-filters-container');
   const hideoutFilters = document.getElementById('hideout-filters-container');
+  
   const statusFilters = document.getElementById('status-filters');
+  const searchInput = document.getElementById('search-input');
 
+  // CONTROL DEL CONTENEDOR DE BÚSQUEDA Y BOTONES
   if (statusFilters) {
-    statusFilters.style.display = (selectedType === "MAIN" || selectedType === "MAPS" || selectedType === "PROFILE") ? 'none' : 'flex';
+    const needsSearch = ["SIDE", "HIDEOUT", "ITEMS"].includes(selectedType);
+    const needsButtons = selectedType === "SIDE";
 
-    const activeBtn = statusFilters.querySelector('button[data-filter="ACTIVE"]');
-    const availableBtn = statusFilters.querySelector('button[data-filter="AVAILABLE"]');
-    const kappaBtn = statusFilters.querySelector('button[data-filter="KAPPA"]');
-    const allBtn = statusFilters.querySelector('button[data-filter="ALL"]');
-    const completedBtn = statusFilters.querySelector('button[data-filter="COMPLETED"]');
-
-    if (selectedType === "ITEMS") {
-      if (activeBtn) activeBtn.style.display = 'none';
-      if (availableBtn) availableBtn.style.display = 'none';
-      if (kappaBtn) kappaBtn.style.display = 'none';
-      if (allBtn) allBtn.style.display = 'none';
-      if (completedBtn) completedBtn.style.display = 'none';
-    } else if (selectedType === "HIDEOUT") {
-      if (activeBtn) activeBtn.style.display = 'none';
-      if (availableBtn) activeBtn.style.display = 'none';
-      if (kappaBtn) kappaBtn.style.display = 'none';
-      if (allBtn) allBtn.style.display = 'inline-block';
-      if (completedBtn) completedBtn.style.display = 'inline-block';
-
-      if (statusFilter === "ACTIVE" || statusFilter === "AVAILABLE" || statusFilter === "KAPPA") {
-        statusFilter = "ALL";
-        statusFilters.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-        if (allBtn) allBtn.classList.add('active');
-      }
+    // Ocultar contenedor completo si no hay ni búsqueda ni botones (Main, Maps, Profile)
+    if (!needsSearch && !needsButtons) {
+      statusFilters.style.display = 'none';
     } else {
-      if (activeBtn) activeBtn.style.display = 'inline-block';
-      if (availableBtn) availableBtn.style.display = 'inline-block';
-      if (kappaBtn) kappaBtn.style.display = 'inline-block';
-      if (allBtn) allBtn.style.display = 'inline-block';
-      if (completedBtn) completedBtn.style.display = 'inline-block';
+      statusFilters.style.display = 'flex';
     }
+
+    // Mostrar barra de búsqueda solo donde toca
+    if (searchInput) {
+      searchInput.style.display = needsSearch ? 'inline-block' : 'none';
+    }
+
+    // Mostrar los botones (Active, All, Kappa...) SOLO en Side Quests
+    statusFilters.querySelectorAll('.btn-filter').forEach(btn => {
+      btn.style.display = needsButtons ? 'inline-block' : 'none';
+    });
   }
 
+  // CONTROL DE LAS PESTAÑAS DE NAVEGACIÓN SECUNDARIAS
   if (selectedType === "MAIN") {
     if (sideFilters) sideFilters.style.display = 'none';
     if (mapsFilters) mapsFilters.style.display = 'none';
@@ -490,11 +479,12 @@ function renderBars() {
 
   } else if (selectedType === "PROFILE" || selectedType === "ITEMS") {
     if (sideFilters) sideFilters.style.display = 'none';
-    if (mainFilters) mainFilters.style.display = 'none';
+    if (mainFilters) sideFilters.style.display = 'none';
     if (mapsFilters) mapsFilters.style.display = 'none';
     if (hideoutFilters) hideoutFilters.style.display = 'none';
 
   } else {
+    // Por defecto: SIDE QUESTS
     if (mainFilters) mainFilters.style.display = 'none';
     if (mapsFilters) mapsFilters.style.display = 'none';
     if (hideoutFilters) hideoutFilters.style.display = 'none';
@@ -913,7 +903,6 @@ function renderQuests() {
   if (selectedType === "MAPS") {
     let mapImgSrc = MAP_IMAGES[selectedOnlyMap] || './images/customs.png';
     
-    // Si el mapa actual está en la base de datos multi-planta, usamos la planta seleccionada
     if (MAP_FLOOR_IMAGES[selectedOnlyMap]) {
       const floors = MAP_FLOOR_IMAGES[selectedOnlyMap];
       if (!floors[selectedMapFloor]) {
@@ -936,12 +925,10 @@ function renderQuests() {
     container.innerHTML = `
       <div class="map-view-card" style="display: flex; gap: 15px; width: 100%; height: 72vh;">
         
-        <!-- Contenedor del Mapa Interactivo con Leaflet -->
         <div style="flex: 1; height: 100%; background: #0b0d0a; border-radius: var(--radius); border: 1px solid var(--line); position: relative; overflow: hidden;">
           
           <div id="leaflet-map-container" style="width: 100%; height: 100%; background: #0b0d0a; z-index: 1; cursor: crosshair;"></div>
           
-          <!-- Selector de Plantas para mapas multi-planta (abajo a la izquierda absoluta sin margen) -->
           ${MAP_FLOOR_IMAGES[selectedOnlyMap] ? `
             <div id="map-floor-selector" style="position: absolute; bottom: 0; left: 0; z-index: 1000; display: flex;">
               ${Object.keys(MAP_FLOOR_IMAGES[selectedOnlyMap]).map((floor, idx) => `
@@ -952,7 +939,6 @@ function renderQuests() {
             </div>
           ` : ''}
 
-          <!-- Botón Open Web Map ajustado en la esquina derecha e inferior absoluta sin margen -->
           <div style="position: absolute; bottom: 0; right: 0; z-index: 1000;">
             <button class="action-btn" id="btn-open-interactive-map" style="background: var(--accent-gold, #d2b98a); color: #000; font-weight: bold; padding: 6px 12px; cursor: pointer; border-top-left-radius: 4px; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border: none; box-shadow: 0 -2px 6px rgba(0,0,0,0.4);">
               🗺️ Open Web Map (tarkov-market) 🔗
@@ -1167,15 +1153,20 @@ function renderQuests() {
   const currentTasks = getFilteredTasksByType();
 
   let filtered = currentTasks.filter(t => {
-    if (selectedType === "SIDE") {
-      if (selectedTrader !== "ALL TRADERS" && t.trader !== selectedTrader) return false;
-      if (selectedMap !== "ALL MAPS" && normalizeMap(t.map) !== selectedMap) return false;
-    } else if (selectedType === "MAIN") {
+    if (selectedType === "MAIN") {
       if (selectedChapter !== "All Chapters") {
         const target = selectedChapter.toLowerCase().trim();
         const fields = [t.chapter, t.trader, t.name, t.id].filter(Boolean).map(s => String(s).toLowerCase().trim());
         if (!fields.some(val => val.includes(target))) return false;
       }
+    } else if (selectedType === "SIDE") {
+      if (selectedTrader !== "ALL TRADERS" && t.trader !== selectedTrader) return false;
+      if (selectedMap !== "ALL MAPS" && normalizeMap(t.map) !== selectedMap) return false;
+
+      if (statusFilter === "ACTIVE" && !progress[`${t.id}_pinned`]) return false;
+      if (statusFilter === "AVAILABLE" && progress[t.id]) return false;
+      if (statusFilter === "COMPLETED" && !progress[t.id]) return false;
+      if (statusFilter === "KAPPA" && !t.kappa) return false;
     } else if (selectedType === "HIDEOUT") {
       if (selectedHideoutModule !== "All Modules") {
         const target = selectedHideoutModule.toLowerCase().trim();
@@ -1191,11 +1182,6 @@ function renderQuests() {
         if (!matches) return false;
       }
     }
-
-    if (statusFilter === "ACTIVE" && !progress[`${t.id}_pinned`]) return false;
-    if (statusFilter === "AVAILABLE" && progress[t.id]) return false;
-    if (statusFilter === "COMPLETED" && !progress[t.id]) return false;
-    if (statusFilter === "KAPPA" && !t.kappa) return false;
 
     if (searchQuery) {
       const matchName = (t.name || "").toLowerCase().includes(searchQuery);
@@ -1277,7 +1263,6 @@ function renderQuests() {
         await updateProgress(task.id, willBeCompleted);
         await applyQuestReputation(task, willBeCompleted);
 
-        // Si se marca como completada, se despinne automáticamente de activa si lo estaba
         if (willBeCompleted && progress[`${task.id}_pinned`]) {
           await updateProgress(`${task.id}_pinned`, false);
         }
@@ -1326,7 +1311,6 @@ function renderQuests() {
             await updateProgress(task.id, true);
             await applyQuestReputation(task, true);
 
-            // Si se completa automáticamente al marcar todos los objetivos, se despinne también
             if (progress[`${task.id}_pinned`]) {
               await updateProgress(`${task.id}_pinned`, false);
             }
