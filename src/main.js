@@ -51,7 +51,7 @@ function showToast(message) {
   }, 3500);
 }
 
-const TRADERS = ["ALL TRADERS", "Prapor", "Therapist", "Skier", "Peacekeeper", "Mechanic", "Ragman", "Jaeger", "Fence", "Ref", "Lightkeeper", "BTR Driver"];
+const TRADERS = ["ALL TRADERS", "Prapor", "Therapist", "Fence", "Skier", "Peacekeeper", "Mechanic", "Ragman", "Jaeger", "Ref", "Lightkeeper", "BTR Driver"];
 const STORY_CHAPTERS = [
   "All Chapters",
   "Tour",
@@ -70,32 +70,32 @@ const ONLY_MAPS_LIST = ["Customs", "Woods", "Factory", "Reserve", "Interchange",
 
 const HIDEOUT_MODULES = [
   "All Modules",
+  "Security",
+  "Generator",
+  "Lavatory",
+  "Workbench",
+  "Medstation",
+  "Nutrition Unit",
+  "Vents",
+  "Heating",
+  "Illumination",
+  "Rest Space",
+  "Water Collector",
+  "Intelligence Center",
+  "Shooting Range",
+  "Weapon Rack",
+  "Defective Wall",
+  "Gym",
+  "Gear Rack",
+  "Hall of Fame",
   "Air Filtering Unit",
   "Bitcoin Farm",
   "Booze Generator",
   "Cultist Circle",
-  "Defective Wall",
-  "Gear Rack",
-  "Generator",
-  "Gym",
-  "Hall of Fame",
-  "Heating",
-  "Illumination",
-  "Intelligence Center",
-  "Lavatory",
   "Library",
-  "Medstation",
-  "Nutrition Unit",
-  "Rest Space",
   "Scav Case",
-  "Security",
-  "Shooting Range",
   "Solar Power",
-  "Stash",
-  "Vents",
-  "Water Collector",
-  "Weapon Rack",
-  "Workbench"
+  "Stash"
 ];
 
 const MAP_IMAGES = {
@@ -399,7 +399,7 @@ function renderBars() {
       if (completedBtn) completedBtn.style.display = 'none';
     } else if (selectedType === "HIDEOUT") {
       if (activeBtn) activeBtn.style.display = 'none';
-      if (availableBtn) availableBtn.style.display = 'none';
+      if (availableBtn) activeBtn.style.display = 'none';
       if (kappaBtn) kappaBtn.style.display = 'none';
       if (allBtn) allBtn.style.display = 'inline-block';
       if (completedBtn) completedBtn.style.display = 'inline-block';
@@ -1276,6 +1276,12 @@ function renderQuests() {
         const willBeCompleted = !isCompleted;
         await updateProgress(task.id, willBeCompleted);
         await applyQuestReputation(task, willBeCompleted);
+
+        // Si se marca como completada, se despinne automáticamente de activa si lo estaba
+        if (willBeCompleted && progress[`${task.id}_pinned`]) {
+          await updateProgress(`${task.id}_pinned`, false);
+        }
+
         renderQuests();
       };
     }
@@ -1319,6 +1325,12 @@ function renderQuests() {
           if (allChecked && !isTaskCurrentlyDone) {
             await updateProgress(task.id, true);
             await applyQuestReputation(task, true);
+
+            // Si se completa automáticamente al marcar todos los objetivos, se despinne también
+            if (progress[`${task.id}_pinned`]) {
+              await updateProgress(`${task.id}_pinned`, false);
+            }
+
             showToast(`¡Misión "${task.name}" completada automáticamente!`);
             renderQuests();
           } else if (!allChecked && isTaskCurrentlyDone) {
