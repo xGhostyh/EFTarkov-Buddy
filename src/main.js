@@ -282,11 +282,15 @@ function showError(msg) {
   }
 }
 
-function normalizeMap(mapStr) {
-  if (!mapStr || mapStr.includes("Not specified") || mapStr.includes(",")) {
-    return "Any Location";
+function matchesMapFilter(taskMapStr, filterMap) {
+  if (filterMap === "ALL MAPS") return true;
+  
+  if (!taskMapStr || taskMapStr.includes("Not specified") || taskMapStr.toLowerCase().includes("any location")) {
+    return filterMap === "Any Location";
   }
-  return mapStr.trim();
+
+  const mapsList = taskMapStr.split(',').map(m => m.trim().toLowerCase());
+  return mapsList.includes(filterMap.toLowerCase());
 }
 
 async function updateProgress(key, value) {
@@ -313,7 +317,7 @@ async function changeEdition(newEditionStr) {
     if (diff !== 0) {
       let currentRep = parseFloat(progress[`trader_rep_${trader}`]) || 0.00;
       currentRep += diff;
-      currentRep = Math.max(0, currentRep); // Previene reputación negativa
+      currentRep = Math.max(0, currentRep);
       progress[`trader_rep_${trader}`] = currentRep.toFixed(2);
     }
   }
@@ -574,7 +578,7 @@ function updateCounters() {
   
   const baseTasks = currentTasks.filter(t => {
     if (selectedTrader !== "ALL TRADERS" && t.trader !== selectedTrader) return false;
-    if (selectedMap !== "ALL MAPS" && normalizeMap(t.map) !== selectedMap) return false;
+    if (!matchesMapFilter(t.map, selectedMap)) return false;
     return true;
   });
 
@@ -743,7 +747,6 @@ function renderQuests() {
     const prestigeLevel = progress['player_prestige'] || 0;
     const playerFaction = progress['player_faction'] || 'usec';
     
-    // Variables separadas para cada edición
     const hasEod = !!progress['edition_eod'];
     const hasUnheard = !!progress['edition_unheard'];
     
@@ -872,7 +875,6 @@ function renderQuests() {
       </div>
     `;
 
-    // Eventos para la exclusión mutua y actualización de bonos de reputación
     const checkEod = document.getElementById('check-eod');
     if (checkEod) {
       checkEod.onchange = async (e) => {
@@ -1029,8 +1031,7 @@ function renderQuests() {
     const wikiUrl = "https://escapefromtarkov.fandom.com/wiki/Keys_%26_Intel#Keys_&_Keycards";
 
     const mapFilteredQuests = tasks.filter(t => {
-      const taskMap = normalizeMap(t.map);
-      const isCorrectMap = taskMap.toLowerCase() === selectedOnlyMap.toLowerCase();
+      const isCorrectMap = matchesMapFilter(t.map, selectedOnlyMap);
       const isPinned = !!progress[`${t.id}_pinned`];
       return isCorrectMap && isPinned;
     });
@@ -1274,7 +1275,7 @@ function renderQuests() {
       }
     } else if (selectedType === "SIDE") {
       if (selectedTrader !== "ALL TRADERS" && t.trader !== selectedTrader) return false;
-      if (selectedMap !== "ALL MAPS" && normalizeMap(t.map) !== selectedMap) return false;
+      if (!matchesMapFilter(t.map, selectedMap)) return false;
 
       if (statusFilter === "ACTIVE" && !progress[`${t.id}_pinned`]) return false;
       if (statusFilter === "AVAILABLE" && progress[t.id]) return false;
