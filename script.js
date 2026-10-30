@@ -6,7 +6,7 @@
 const CONFIG = {
   // Replace YOUR_USER / YOUR_REPO with your real GitHub path.
   repo: "https://github.com/xGhostyh/EFTarkov-Buddy",
-  version: "1.0.6",
+  version: "1.0.7",
 };
 CONFIG.releases = CONFIG.repo + "/releases";
 CONFIG.installer = `EFTarkov_Buddy_${CONFIG.version}_x64-setup.exe`;

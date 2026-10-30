@@ -26,7 +26,7 @@ async function openExternalUrl(url) {
       opened = true;
     }
   } catch (err) {
-    console.warn("Permiso denegado o error en Tauri shell.open:", err);
+    console.warn("Permission denied or error in Tauri shell.open:", err);
   }
 
   if (!opened) {
@@ -228,7 +228,7 @@ const MAP_KEYS_DB = {
   ]
 };
 
-// Bonos de reputación iniciales de las ediciones
+// Initial rep bonuses for "premium" game editions
 const EDITIONS_BONUS = {
   eod: { "Prapor": 0.20, "Therapist": 0.20, "Fence": 0.20, "Skier": 0.20, "Peacekeeper": 0.20, "Mechanic": 0.20, "Ragman": 0.20, "Jaeger": 0.20, "Ref": 0.20 },
   unheard: { "Prapor": 0.20, "Therapist": 0.20, "Fence": 0.70, "Skier": 0.20, "Peacekeeper": 0.20, "Mechanic": 0.20, "Ragman": 0.20, "Jaeger": 0.20, "Ref": 0.20 }
@@ -255,7 +255,7 @@ async function init() {
   renderBars();
 
   if (!invoke) {
-    showError("No se pudo conectar con el Backend de Tauri.");
+    showError("Could not connect to the Tauri Backend.");
     return;
   }
 
@@ -267,7 +267,7 @@ async function init() {
     updateCounters();
     renderQuests();
   } catch (err) {
-    console.error("Error al cargar datos desde Rust:", err);
+    console.error("Data loading error from Rust:", err);
     showError(err);
   }
 }
@@ -277,7 +277,7 @@ function showError(msg) {
   if (container) {
     container.innerHTML = `
       <div style="background: rgba(30, 10, 10, 0.85); border: 1px solid #ff5252; color: #ff8282; padding: 20px; margin-top: 20px; border-radius: 6px; text-align: center; font-weight: bold;">
-        ⚠️ ERROR DE CARGA DE DATOS:<br><br>${msg}
+        ⚠️ DATA LOADING ERROR:<br><br>${msg}
       </div>`;
   }
 }
@@ -1182,7 +1182,7 @@ function renderQuests() {
           });
 
           currentLeafletMap.on('click', async (e) => {
-            const pinText = prompt("Introduce el nombre de la misión u objetivo para este pin:");
+            const pinText = prompt("Enter the name of the mission or objective for this pin:");
             if (!pinText || !pinText.trim()) return;
 
             const newPin = {
@@ -1198,7 +1198,7 @@ function renderQuests() {
 
             await updateProgress(customPinsKey, progress[customPinsKey]);
             renderQuests();
-            showToast("Pin añadido correctamente");
+            showToast("Pin added successfully");
           });
 
         };
@@ -1214,7 +1214,7 @@ function renderQuests() {
         progress[customPinsKey].splice(pinIndex, 1);
         await updateProgress(customPinsKey, progress[customPinsKey]);
         renderQuests();
-        showToast("Pin eliminado");
+        showToast("Pin removed");
       }
     };
 
@@ -1429,7 +1429,7 @@ function renderQuests() {
               await updateProgress(`${task.id}_pinned`, false);
             }
 
-            showToast(`¡Misión "${task.name}" completada automáticamente!`);
+            showToast(`!"${task.name}" completed!`);
             renderQuests();
           } else if (!allChecked && isTaskCurrentlyDone) {
             await updateProgress(task.id, false);
