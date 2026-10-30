@@ -228,6 +228,12 @@ const MAP_KEYS_DB = {
   ]
 };
 
+// Bonos de reputación iniciales de las ediciones
+const EDITIONS_BONUS = {
+  eod: { "Prapor": 0.20, "Therapist": 0.20, "Fence": 0.20, "Skier": 0.20, "Peacekeeper": 0.20, "Mechanic": 0.20, "Ragman": 0.20, "Jaeger": 0.20, "Ref": 0.20 },
+  unheard: { "Prapor": 0.20, "Therapist": 0.20, "Fence": 0.70, "Skier": 0.20, "Peacekeeper": 0.20, "Mechanic": 0.20, "Ragman": 0.20, "Jaeger": 0.20, "Ref": 0.20 }
+};
+
 let tasks = [];
 let hideoutTasks = [];
 let progress = {};
@@ -289,6 +295,38 @@ async function updateProgress(key, value) {
     await invoke('save_progress', { progress });
   }
   updateCounters();
+}
+
+async function changeEdition(newEditionStr) {
+  let currentEod = !!progress['edition_eod'];
+  let currentUnheard = !!progress['edition_unheard'];
+  
+  let oldEditionStr = currentEod ? 'eod' : (currentUnheard ? 'unheard' : 'none');
+  if (oldEditionStr === newEditionStr) return;
+
+  for (let trader of TRADERS) {
+    if (trader === "ALL TRADERS") continue;
+    let oldBonus = (EDITIONS_BONUS[oldEditionStr] && EDITIONS_BONUS[oldEditionStr][trader]) || 0;
+    let newBonus = (EDITIONS_BONUS[newEditionStr] && EDITIONS_BONUS[newEditionStr][trader]) || 0;
+    
+    let diff = newBonus - oldBonus;
+    if (diff !== 0) {
+      let currentRep = parseFloat(progress[`trader_rep_${trader}`]) || 0.00;
+      currentRep += diff;
+      currentRep = Math.max(0, currentRep); // Previene reputación negativa
+      progress[`trader_rep_${trader}`] = currentRep.toFixed(2);
+    }
+  }
+
+  progress['edition_eod'] = (newEditionStr === 'eod');
+  progress['edition_unheard'] = (newEditionStr === 'unheard');
+
+  if (invoke) {
+    await invoke('save_progress', { progress });
+  }
+  
+  updateCounters();
+  renderQuests();
 }
 
 async function applyQuestReputation(task, isCompleting) {
@@ -383,30 +421,25 @@ function renderBars() {
   const statusFilters = document.getElementById('status-filters');
   const searchInput = document.getElementById('search-input');
 
-  // CONTROL DEL CONTENEDOR DE BÚSQUEDA Y BOTONES
   if (statusFilters) {
     const needsSearch = ["SIDE", "HIDEOUT", "ITEMS"].includes(selectedType);
     const needsButtons = selectedType === "SIDE";
 
-    // Ocultar contenedor completo si no hay ni búsqueda ni botones (Main, Maps, Profile)
     if (!needsSearch && !needsButtons) {
       statusFilters.style.display = 'none';
     } else {
       statusFilters.style.display = 'flex';
     }
 
-    // Mostrar barra de búsqueda solo donde toca
     if (searchInput) {
       searchInput.style.display = needsSearch ? 'inline-block' : 'none';
     }
 
-    // Mostrar los botones (Active, All, Kappa...) SOLO en Side Quests
     statusFilters.querySelectorAll('.btn-filter').forEach(btn => {
       btn.style.display = needsButtons ? 'inline-block' : 'none';
     });
   }
 
-  // CONTROL DE LAS PESTAÑAS DE NAVEGACIÓN SECUNDARIAS
   if (selectedType === "MAIN") {
     if (sideFilters) sideFilters.style.display = 'none';
     if (mapsFilters) mapsFilters.style.display = 'none';
@@ -484,7 +517,6 @@ function renderBars() {
     if (hideoutFilters) hideoutFilters.style.display = 'none';
 
   } else {
-    // Por defecto: SIDE QUESTS
     if (mainFilters) mainFilters.style.display = 'none';
     if (mapsFilters) mapsFilters.style.display = 'none';
     if (hideoutFilters) hideoutFilters.style.display = 'none';
@@ -531,7 +563,7 @@ function renderBars() {
 function updateCounters() {
   const statsElem = document.getElementById('global-stats');
 
-  if (selectedType === "MAIN" || selectedType === "MAPS" || selectedType === "HIDEOUT" || selectedType === "PROFILE" || selectedType === "ITEMS") {
+  if (selectedType !== "SIDE") {
     if (statsElem) statsElem.style.display = 'none';
     return;
   }
@@ -539,27 +571,44 @@ function updateCounters() {
   if (statsElem) statsElem.style.display = 'block';
 
   const currentTasks = getFilteredTasksByType();
-  const total = currentTasks.length;
-  const completed = currentTasks.filter(t => progress[t.id]).length;
+  
+  const baseTasks = currentTasks.filter(t => {
+    if (selectedTrader !== "ALL TRADERS" && t.trader !== selectedTrader) return false;
+    if (selectedMap !== "ALL MAPS" && normalizeMap(t.map) !== selectedMap) return false;
+    return true;
+  });
+
+  const total = baseTasks.length;
+  const completed = baseTasks.filter(t => progress[t.id]).length;
   const pct = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
   
   if (statsElem) {
     statsElem.innerText = `Total: ${completed} / ${total} (${pct}%)`;
   }
 
-  if (selectedType === "SIDE") {
-    document.querySelectorAll('#trader-bar .nav-btn').forEach(btn => {
-      const tr = btn.dataset.trader;
-      const pending = currentTasks.filter(t => (tr === "ALL TRADERS" || t.trader === tr) && !progress[t.id]).length;
-      btn.innerText = `${tr} [${pending}]`;
-    });
+  document.querySelectorAll('#trader-bar .nav-btn').forEach(btn => {
+    btn.innerText = btn.dataset.trader;
+  });
 
-    document.querySelectorAll('#map-bar .nav-btn').forEach(btn => {
-      const m = btn.dataset.map;
-      const pending = currentTasks.filter(t => (m === "ALL MAPS" || normalizeMap(t.map) === m) && !progress[t.id]).length;
-      btn.innerText = `${m} [${pending}]`;
-    });
-  }
+  document.querySelectorAll('#map-bar .nav-btn').forEach(btn => {
+    btn.innerText = btn.dataset.map;
+  });
+
+  const activeCount = baseTasks.filter(t => progress[`${t.id}_pinned`]).length;
+  const availableCount = baseTasks.filter(t => !progress[t.id]).length;
+  const kappaCount = baseTasks.filter(t => t.kappa).length;
+
+  const allBtn = document.querySelector('#status-filters button[data-filter="ALL"]');
+  const activeBtn = document.querySelector('#status-filters button[data-filter="ACTIVE"]');
+  const availableBtn = document.querySelector('#status-filters button[data-filter="AVAILABLE"]');
+  const kappaBtn = document.querySelector('#status-filters button[data-filter="KAPPA"]');
+  const completedBtn = document.querySelector('#status-filters button[data-filter="COMPLETED"]');
+
+  if (allBtn) allBtn.innerText = `ALL [${total}]`;
+  if (activeBtn) activeBtn.innerText = `ACTIVE [${activeCount}]`;
+  if (availableBtn) availableBtn.innerText = `AVAILABLE [${availableCount}]`;
+  if (kappaBtn) kappaBtn.innerText = `KAPPA [${kappaCount}]`;
+  if (completedBtn) completedBtn.innerText = `COMPLETED [${completed}]`;
 }
 
 function getNeededItems() {
@@ -692,19 +741,57 @@ function renderQuests() {
   if (selectedType === "PROFILE") {
     const userLevel = progress['player_level'] || 1;
     const prestigeLevel = progress['player_prestige'] || 0;
+    const playerFaction = progress['player_faction'] || 'usec';
+    
+    // Variables separadas para cada edición
+    const hasEod = !!progress['edition_eod'];
+    const hasUnheard = !!progress['edition_unheard'];
+    
     const profileTraders = TRADERS.filter(t => t !== "ALL TRADERS");
 
     container.innerHTML = `
       <div class="profile-container">
         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+          
+          <div class="level-card">
+            <div class="level-info" style="justify-content: space-evenly;">
+              <span class="level-label">Faction</span>
+              <img id="profile-faction-img" src="./images/${playerFaction}.png" alt="Faction" style="height: 38px; object-fit: contain; margin-top: 4px;">
+            </div>
+            <div class="level-controls">
+              <button class="btn-level" id="btn-faction-toggle-up">▲</button>
+              <button class="btn-level" id="btn-faction-toggle-down">▼</button>
+            </div>
+          </div>
+
+          <div class="level-card">
+            <div class="level-info" style="justify-content: space-evenly;">
+              <span class="level-label">Prepare to Escape/EOD</span>
+              <img id="profile-eod-img" src="./images/eod.png" alt="EOD" style="height: 38px; object-fit: contain; margin-top: 4px; filter: ${hasEod ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: all 0.3s ease;">
+            </div>
+            <div class="level-controls" style="justify-content: center; align-items: center; display: flex;">
+              <input type="checkbox" id="check-eod" ${hasEod ? 'checked' : ''} style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-gold, #d2b98a);">
+            </div>
+          </div>
+
+          <div class="level-card">
+            <div class="level-info" style="justify-content: space-evenly;">
+              <span class="level-label">Unheard</span>
+              <img id="profile-unheard-img" src="./images/unheard.png" alt="Unheard" style="height: 38px; object-fit: contain; margin-top: 4px; filter: ${hasUnheard ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: all 0.3s ease;">
+            </div>
+            <div class="level-controls" style="justify-content: center; align-items: center; display: flex;">
+              <input type="checkbox" id="check-unheard" ${hasUnheard ? 'checked' : ''} style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-gold, #d2b98a);">
+            </div>
+          </div>
+
           <div class="level-card">
             <div class="level-info">
               <span class="level-label">Level</span>
               <span class="level-value" id="profile-level-val">${userLevel}</span>
             </div>
             <div class="level-controls">
-              <button class="btn-level" id="btn-level-up">+</button>
-              <button class="btn-level" id="btn-level-down">-</button>
+              <button class="btn-level" id="btn-level-up">▲</button>
+              <button class="btn-level" id="btn-level-down">▼</button>
             </div>
           </div>
 
@@ -714,12 +801,11 @@ function renderQuests() {
               <span class="level-value" id="profile-prestige-val" style="color: var(--alert);">${prestigeLevel}</span>
             </div>
             <div class="level-controls">
-              <button class="btn-level" id="btn-prestige-up">+</button>
-              <button class="btn-level" id="btn-prestige-down">-</button>
+              <button class="btn-level" id="btn-prestige-up">▲</button>
+              <button class="btn-level" id="btn-prestige-down">▼</button>
             </div>
           </div>
         </div>
-
         <div class="traders-grid">
           ${profileTraders.map(trader => {
             const traderTasks = tasks.filter(t => !t.is_main && t.trader === trader);
@@ -785,6 +871,33 @@ function renderQuests() {
         </div>
       </div>
     `;
+
+    // Eventos para la exclusión mutua y actualización de bonos de reputación
+    const checkEod = document.getElementById('check-eod');
+    if (checkEod) {
+      checkEod.onchange = async (e) => {
+        const isChecked = e.target.checked;
+        await changeEdition(isChecked ? 'eod' : 'none');
+      };
+    }
+
+    const checkUnheard = document.getElementById('check-unheard');
+    if (checkUnheard) {
+      checkUnheard.onchange = async (e) => {
+        const isChecked = e.target.checked;
+        await changeEdition(isChecked ? 'unheard' : 'none');
+      };
+    }
+
+    const toggleFaction = async () => {
+      let f = progress['player_faction'] || 'usec';
+      f = f === 'usec' ? 'bear' : 'usec';
+      document.getElementById('profile-faction-img').src = `./images/${f}.png`;
+      await updateProgress('player_faction', f);
+    };
+
+    document.getElementById('btn-faction-toggle-up').onclick = toggleFaction;
+    document.getElementById('btn-faction-toggle-down').onclick = toggleFaction;
 
     const levelValElem = document.getElementById('profile-level-val');
     document.getElementById('btn-level-up').onclick = async () => {
