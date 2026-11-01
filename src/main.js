@@ -12,7 +12,7 @@ function initTauriApi() {
   }
 }
 
-// Inyectamos CSS personalizado para que los controles de Leaflet (+/-) coincidan con tu diseño oscuro
+// Inyectamos CSS personalizado para que los controles de Leaflet (+/-) coincidan con el diseño oscuro
 function injectLeafletStyles() {
   if (document.getElementById('custom-leaflet-styles')) return;
   const style = document.createElement('style');
@@ -261,7 +261,7 @@ let currentLeafletMap = null;
 
 async function init() {
   initTauriApi();
-  injectLeafletStyles(); // Carga el CSS de los botones +/- oscuros
+  injectLeafletStyles();
   setupTypeBar();
   setupFilters();
   renderBars();
@@ -358,7 +358,7 @@ async function applyQuestReputation(task, isCompleting) {
       try {
         const idx = rewardsLower.indexOf(traderSearch);
         const sub = task.rewards.substring(idx + traderSearch.length).trim();
-        const matchVal = sub.match(/^([+-]?d*.?d+)/);
+        const matchVal = sub.match(/^([+-]?\d*\.?\d+)/);
         
         if (matchVal) {
           const repChangeValue = parseFloat(matchVal[1]);
@@ -390,7 +390,7 @@ function setupTypeBar() {
       e.target.classList.add('selected-type');
       selectedType = e.target.dataset.type;
       
-      // Resetea el filtro a ALL al cambiar de pestaña para evitar bugs
+      // Resetea el filtro a ALL al cambiar de pestaña
       statusFilter = "ALL";
       document.querySelectorAll('.btn-filter').forEach(b => {
         b.classList.toggle('active', b.dataset.filter === "ALL");
@@ -714,7 +714,7 @@ function getNeededItems() {
     let count = 1;
     let cleanName = reqStr.trim();
 
-    const matchX = cleanName.match(/^(d+)s*xs*(.+)$/i) || cleanName.match(/^(.+)s*xs*(d+)$/i);
+    const matchX = cleanName.match(/^(\d+)\s*x\s*(.+)$/i) || cleanName.match(/^(.+)\s*x\s*(\d+)$/i);
     if (matchX) {
       if (!isNaN(matchX[1])) {
         count = parseInt(matchX[1], 10);
@@ -724,7 +724,7 @@ function getNeededItems() {
         cleanName = matchX[1].trim();
       }
     } else {
-      const matchSpace = cleanName.match(/^(d+)s+(.+)$/);
+      const matchSpace = cleanName.match(/^(\d+)\s+(.+)$/);
       if (matchSpace) {
         count = parseInt(matchSpace[1], 10);
         cleanName = matchSpace[2].trim();
@@ -1053,7 +1053,7 @@ function renderQuests() {
     };
 
     document.getElementById('btn-wipe-reset').onclick = async () => {
-      const confirmed = confirm("⚠️ Are you sure you want to reset all progress for the new Wipe?nThis action cannot be undone.");
+      const confirmed = confirm("⚠️ Are you sure you want to reset all progress for the new Wipe?\nThis action cannot be undone.");
       if (confirmed) {
         progress = {};
         if (invoke) {
@@ -1148,7 +1148,7 @@ function renderQuests() {
             </h3>
             <div class="keys-list">
               ${keysList.length > 0 ? keysList.map(keyName => {
-                const keyId = `key_${selectedOnlyMap.replace(/s+/g, '')}_${keyName.replace(/s+/g, '')}`;
+                const keyId = `key_${selectedOnlyMap.replace(/\s+/g, '')}_${keyName.replace(/\s+/g, '')}`;
                 const isChecked = !!progress[keyId];
 
                 return `
@@ -1207,7 +1207,7 @@ function renderQuests() {
           maxZoom: 3,
           zoomControl: true,
           zoomDelta: 0.5,
-          zoomSnap: 0, // Cero permite zoom milimétrico y fluido sin redondear
+          zoomSnap: 0,
           scrollWheelZoom: 'center',
           wheelPxPerZoomLevel: 120
         });
@@ -1232,14 +1232,13 @@ function renderQuests() {
           currentLeafletMap.setMaxBounds([[-h * 0.1, -w * 0.1], [h * 1.1, w * 1.1]]);
           currentLeafletMap.setView([h / 2, w / 2], dynamicMinZoom);
 
-          // --- NUEVO: Botón de reset anidado en el control de zoom ---
           const zoomControl = document.querySelector('.leaflet-control-zoom');
           if (zoomControl && !document.getElementById('btn-reset-map-view')) {
             const resetBtn = document.createElement('a');
             resetBtn.id = 'btn-reset-map-view';
             resetBtn.href = '#';
             resetBtn.title = 'Reset Map View';
-            resetBtn.innerHTML = '⛶'; // Icono para centrar/expandir
+            resetBtn.innerHTML = '⛶';
             resetBtn.style.fontSize = '15px';
             resetBtn.style.display = 'flex';
             resetBtn.style.alignItems = 'center';
@@ -1248,13 +1247,11 @@ function renderQuests() {
             resetBtn.onclick = (e) => {
               e.preventDefault();
               e.stopPropagation();
-              // Anima la vuelta al centro con el zoom mínimo original
               currentLeafletMap.setView([h / 2, w / 2], dynamicMinZoom, { animate: true, duration: 0.5 });
             };
             
             zoomControl.appendChild(resetBtn);
           }
-          // -----------------------------------------------------------
 
           const currentFloorKey = MAP_FLOOR_IMAGES[selectedOnlyMap] ? selectedMapFloor : 'main';
           const customPinsKey = `custom_pins_${selectedOnlyMap}_${currentFloorKey}`;
@@ -1388,7 +1385,7 @@ function renderQuests() {
 
         if (!matches) return false;
       }
-      
+
       // Aplicar filtros exclusivos del Hideout
       if (statusFilter === "AVAILABLE" && progress[t.id]) return false;
       if (statusFilter === "COMPLETED" && !progress[t.id]) return false;
@@ -1415,17 +1412,17 @@ function renderQuests() {
     const isPinned = !!progress[`${task.id}_pinned`];
     const reqList = task.objectives || task.requirements || [];
 
-    const card = document.createElement('div');
-    card.className = 'quest-card';
-    
+    // Comprobar estado plegado guardado (por defecto desplegado)
     const foldKey = `${task.id}_folded`;
     const isFolded = progress[foldKey] === true;
 
+    const card = document.createElement('div');
+    card.className = 'quest-card';
 
     card.innerHTML = `
-      <div class="card-header" style="cursor: pointer;" title="Click to expand/collapse details">
+      <div class="card-header">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="toggle-icon" style="font-size: 0.8rem; color: var(--accent-gold, #d2b98a);">${isFolded ? '▼' : '▲'}</span>
+          <span class="toggle-icon" style="font-size: 0.8rem; color: var(--accent-gold, #d2b98a); cursor: pointer; padding: 2px 6px; user-select: none;" title="Click to expand/collapse details">${isFolded ? '▼' : '▲'}</span>
           <span class="quest-title" style="color: ${isCompleted ? '#4caf50' : (task.kappa ? '#c2a649' : '#3894ff')}">
             ${task.kappa ? '★ ' : ''}${task.name}
           </span>
@@ -1469,24 +1466,23 @@ function renderQuests() {
       </div>
     `;
 
-    // Handle folding/unfolding logic and persist state
-    const headerElem = card.querySelector('.card-header');
-    const bodyElem = card.querySelector('.quest-body');
+    // Asignar el evento de plegar/desplegar exclusivamente a la flecha (toggle-icon)
     const iconElem = card.querySelector('.toggle-icon');
+    const bodyElem = card.querySelector('.quest-body');
 
-    headerElem.addEventListener('click', async (e) => {
-      // Prevent folding if the user clicks a button, a checkbox, or the wiki link
-      if (e.target.closest('button') || e.target.closest('.wiki-link') || e.target.tagName === 'INPUT') return;
+    if (iconElem) {
+      iconElem.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        
+        const currentlyCollapsed = bodyElem.style.display === 'none';
+        const newFoldState = !currentlyCollapsed;
+        
+        bodyElem.style.display = newFoldState ? 'none' : 'block';
+        iconElem.innerText = newFoldState ? '▼' : '▲';
 
-      const currentlyCollapsed = bodyElem.style.display === 'none';
-      const newFoldState = !currentlyCollapsed; // if it was visible, it's now folding
-      
-      bodyElem.style.display = newFoldState ? 'none' : 'block';
-      iconElem.innerText = newFoldState ? '▼' : '▲';
-
-      // Save the state to progress and backend storage
-      await updateProgress(foldKey, newFoldState);
-    });
+        await updateProgress(foldKey, newFoldState);
+      });
+    }
 
     const wikiLink = card.querySelector('.wiki-link');
     if (wikiLink && task.wiki_url) {
@@ -1555,7 +1551,7 @@ function renderQuests() {
               await updateProgress(`${task.id}_pinned`, false);
             }
 
-            showToast(`!"${task.name}" completed!`);
+            showToast(`"${task.name}" completed!`);
             renderQuests();
           } else if (!allChecked && isTaskCurrentlyDone) {
             await updateProgress(task.id, false);
