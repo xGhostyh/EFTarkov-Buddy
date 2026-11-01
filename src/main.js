@@ -12,6 +12,29 @@ function initTauriApi() {
   }
 }
 
+// Inyectamos CSS personalizado para que los controles de Leaflet (+/-) coincidan con tu diseño oscuro
+function injectLeafletStyles() {
+  if (document.getElementById('custom-leaflet-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'custom-leaflet-styles';
+  style.innerHTML = `
+    .leaflet-bar a, .leaflet-bar a:hover {
+      background-color: rgba(11, 13, 10, 0.9) !important;
+      color: var(--accent-gold, #d2b98a) !important;
+      border: 1px solid var(--line) !important;
+    }
+    .leaflet-bar a.leaflet-disabled {
+      background-color: rgba(11, 13, 10, 0.5) !important;
+      color: #555 !important;
+    }
+    .leaflet-control-zoom {
+      border: none !important;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 async function openExternalUrl(url) {
   if (!url) return;
 
@@ -66,7 +89,7 @@ const STORY_CHAPTERS = [
   "Boreas"
 ];
 const MAIN_MAPS = ["ALL MAPS", "Customs", "Woods", "Factory", "Reserve", "Interchange", "Shoreline", "Streets of Tarkov", "Ground Zero", "Lighthouse", "The Lab", "Any Location"];
-const ONLY_MAPS_LIST = ["Customs", "Woods", "Factory", "Reserve", "Interchange", "Shoreline", "Streets of Tarkov", "Ground Zero", "Lighthouse", "The Lab"];
+const ONLY_MAPS_LIST = ["Customs", "Woods", "Factory", "Reserve", "Interchange", "Shoreline", "Streets of Tarkov", "Ground Zero", "Lighthouse", "The Lab", "Icebreaker", "Labyrinth", "Terminal"];
 
 const HIDEOUT_MODULES = [
   "All Modules",
@@ -99,46 +122,34 @@ const HIDEOUT_MODULES = [
 ];
 
 const MAP_IMAGES = {
-  "Customs": "./images/customs.png",
-  "Woods": "./images/woods.png",
-  "Factory": "./images/factory.png",
-  "Reserve": "./images/reserve.png",
-  "Interchange": "./images/interchange.png",
-  "Shoreline": "./images/shoreline.png",
-  "Streets of Tarkov": "./images/streets.png",
-  "Ground Zero": "./images/ground_zero.png",
-  "Lighthouse": "./images/lighthouse.png",
-  "The Lab": "./images/the_lab.png"
+  "Customs": "./images/customs.jpg",
+  "Woods": "./images/woods.jpg",
+  "Factory": "./images/factory.jpg",
+  "Reserve": "./images/reserve.jpg",
+  "Interchange": "./images/interchange.jpg",
+  "Shoreline": "./images/shoreline.jpg",
+  "Streets of Tarkov": "./images/streets.jpg",
+  "Ground Zero": "./images/ground_zero.jpg",
+  "Lighthouse": "./images/lighthouse.jpg",
+  "The Lab": "./images/the_lab.jpg",
+  "Icebreaker": "./images/icebreaker.jpg",
+  "Labyrinth": "./images/labyrinth.jpg",
+  "Terminal": "./images/terminal.jpg"
 };
 
 const MAP_FLOOR_IMAGES = {
   "Customs": {
-    "Dorms": "./images/customs_dorms.png",
-    "Main": "./images/customs.png"
-  },
-  "Factory": {
-    "Basement": "./images/factory_b.png",
-    "Main": "./images/factory.png",
-    "Level 2": "./images/factory_floor2.png",
-    "Level 3": "./images/factory_floor3.png"
-  },
-  "Reserve": {
-    "Bunker": "./images/reserve_b.png",
-    "Main": "./images/reserve.png"
-  },
-  "Interchange": {
-    "Ground Floor": "./images/interchange.png",
-    "Level 2": "./images/interchange_2.png",
-    "Level 3": "./images/interchange_3.png"
+    "Dorms": "./images/customs_dorms.jpg",
+    "Main": "./images/customs.jpg"
   },
   "Shoreline": {
-    "Resort": "./images/shoreline_r.png",
-    "Floor 2": "./images/shoreline.png",
+    "Resort": "./images/shoreline_r.jpg",
+    "Floor 2": "./images/shoreline.jpg",
   },
   "The Lab": {
-    "Floor 1": "./images/the_lab_floor1.png",
-    "Floor 2": "./images/the_lab.png",
-    "Floor 3": "./images/the_lab_floor3.png"
+    "Floor 1": "./images/the_lab_floor1.jpg",
+    "Floor 2": "./images/the_lab.jpg",
+    "Floor 3": "./images/the_lab_floor3.jpg"
   }
 };
 
@@ -250,6 +261,7 @@ let currentLeafletMap = null;
 
 async function init() {
   initTauriApi();
+  injectLeafletStyles(); // Carga el CSS de los botones +/- oscuros
   setupTypeBar();
   setupFilters();
   renderBars();
@@ -1053,9 +1065,15 @@ function renderQuests() {
             </div>
           ` : ''}
 
+          <div style="position: absolute; bottom: 42px; right: 10px; z-index: 1000; pointer-events: none;">
+            <div id="leaflet-instruction-badge" style="background: rgba(11, 13, 10, 0.9); border: 1px solid var(--line); padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; color: var(--accent-gold, #d2b98a); box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+              💡 Click anywhere on the map to add a custom pin.
+            </div>
+          </div>
+
           <div style="position: absolute; bottom: 0; right: 0; z-index: 1000;">
             <button class="action-btn" id="btn-open-interactive-map" style="background: var(--accent-gold, #d2b98a); color: #000; font-weight: bold; padding: 6px 12px; cursor: pointer; border-top-left-radius: 4px; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border: none; box-shadow: 0 -2px 6px rgba(0,0,0,0.4);">
-              🗺️ Open Web Map (tarkov-market) 🔗
+              🗺️ Open Interactive Map 🔗
             </button>
           </div>
         </div>
@@ -1128,8 +1146,8 @@ function renderQuests() {
           minZoom: -5,
           maxZoom: 3,
           zoomControl: true,
-          zoomDelta: 0.25,
-          zoomSnap: 0.25,
+          zoomDelta: 0.5,
+          zoomSnap: 0, // Cero permite zoom milimétrico y fluido sin redondear
           scrollWheelZoom: 'center',
           wheelPxPerZoomLevel: 120
         });
@@ -1152,16 +1170,31 @@ function renderQuests() {
 
           currentLeafletMap.setMinZoom(dynamicMinZoom);
           currentLeafletMap.setMaxBounds([[-h * 0.1, -w * 0.1], [h * 1.1, w * 1.1]]);
-          currentLeafletMap.fitBounds(bounds);
+          currentLeafletMap.setView([h / 2, w / 2], dynamicMinZoom);
 
-          const zoomControlContainer = document.querySelector('.leaflet-top.leaflet-left');
-          if (zoomControlContainer && !document.getElementById('leaflet-instruction-badge')) {
-            const hintDiv = document.createElement('div');
-            hintDiv.id = 'leaflet-instruction-badge';
-            hintDiv.style.cssText = 'display: inline-block; background: rgba(11, 13, 10, 0.9); border: 1px solid var(--line); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; color: var(--accent-gold, #d2b98a); margin-left: 8px; vertical-align: middle; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: none;';
-            hintDiv.innerHTML = '💡 Click anywhere on the map to add a custom pin.';
-            zoomControlContainer.appendChild(hintDiv);
+          // --- NUEVO: Botón de reset anidado en el control de zoom ---
+          const zoomControl = document.querySelector('.leaflet-control-zoom');
+          if (zoomControl && !document.getElementById('btn-reset-map-view')) {
+            const resetBtn = document.createElement('a');
+            resetBtn.id = 'btn-reset-map-view';
+            resetBtn.href = '#';
+            resetBtn.title = 'Reset Map View';
+            resetBtn.innerHTML = '⛶'; // Icono para centrar/expandir
+            resetBtn.style.fontSize = '15px';
+            resetBtn.style.display = 'flex';
+            resetBtn.style.alignItems = 'center';
+            resetBtn.style.justifyContent = 'center';
+            
+            resetBtn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // Anima la vuelta al centro con el zoom mínimo original
+              currentLeafletMap.setView([h / 2, w / 2], dynamicMinZoom, { animate: true, duration: 0.5 });
+            };
+            
+            zoomControl.appendChild(resetBtn);
           }
+          // -----------------------------------------------------------
 
           const currentFloorKey = MAP_FLOOR_IMAGES[selectedOnlyMap] ? selectedMapFloor : 'main';
           const customPinsKey = `custom_pins_${selectedOnlyMap}_${currentFloorKey}`;

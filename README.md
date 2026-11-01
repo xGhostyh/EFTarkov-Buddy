@@ -6,16 +6,16 @@
 
 **Know your next objective before you load in.**
 
-`> OPERATION: PREP // v1.0.7 ONLINE`
+`> OPERATION: PREP // v1.0.8 ONLINE`
 
 ![Platform](https://img.shields.io/badge/Platform-Windows_x64-0b0d0a?style=flat-square&logo=windows&logoColor=d2b98a&labelColor=3b4a1f&color=0b0d0a)
 ![Built with Tauri](https://img.shields.io/badge/Tauri-v2-0b0d0a?style=flat-square&logo=tauri&logoColor=d2b98a&labelColor=3b4a1f&color=0b0d0a)
 ![Backend](https://img.shields.io/badge/Backend-Rust-0b0d0a?style=flat-square&logo=rust&logoColor=d2b98a&labelColor=3b4a1f&color=0b0d0a)
-![Version](https://img.shields.io/badge/Version-1.0.7-d2b98a?style=flat-square&labelColor=3b4a1f)
+![Version](https://img.shields.io/badge/Version-1.0.8-d2b98a?style=flat-square&labelColor=3b4a1f)
 
 <br>
 
-[![Download](https://img.shields.io/badge/%E2%AC%87%20DOWNLOAD-v1.0.7_for_Windows-8a9a4a?style=for-the-badge&labelColor=0b0d0a)](../../releases)
+[![Download](https://img.shields.io/badge/%E2%AC%87%20DOWNLOAD-v1.0.8_for_Windows-8a9a4a?style=for-the-badge&labelColor=0b0d0a)](../../releases)
 
 </div>
 
@@ -76,7 +76,7 @@ Your PC is already busy running Tarkov. Buddy stays small, quick and out of your
 ## `// 04` — DEPLOYMENT
 
 1. Go to the [**Releases**](../../releases) section of this repository.
-2. Download the latest installer: `EFTarkov_Buddy_1.0.7_x64-setup.exe`
+2. Download the latest installer: `EFTarkov_Buddy_1.0.8_x64-setup.exe`
 3. Run the installer and follow the setup wizard.
 4. Launch **EFTarkov Buddy** and start tracking your raid goals.
 
@@ -90,4 +90,8 @@ Your progress can be exported to a JSON file and imported again at any time, so 
 
 > ### ⚠ DISCLAIMER & CREDITS
 > **EFTarkov Buddy** is an unofficial, fan-made application. It is not affiliated with, endorsed by, or sponsored by Battlestate Games. *Escape From Tarkov* and all related assets, names, and trademarks belong to **Battlestate Games**.
-> The tactical maps used within this application have been sourced from [Tarkov Market](https://tarkov-market.com/). All credits for the maps belong to their respective creators and platform.
+
+
+> Special thanks to [**RE3MR**](https://reemr.se/) for his exceptional work creating and maintaining some of the most detailed and impressive Escape From Tarkov maps available. His dedication and contribution to the Tarkov community are greatly appreciated. Maps featured in this application are sourced from his work. If you enjoy his maps, please consider supporting his continued work through [**Patreon**](https://www.patreon.com/c/re3mr).
+
+> Additional data and resources sourced from Tarkov Market. 
