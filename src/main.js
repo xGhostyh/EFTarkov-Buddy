@@ -358,7 +358,7 @@ async function applyQuestReputation(task, isCompleting) {
       try {
         const idx = rewardsLower.indexOf(traderSearch);
         const sub = task.rewards.substring(idx + traderSearch.length).trim();
-        const matchVal = sub.match(/^([+-]?\d*\.?\d+)/);
+        const matchVal = sub.match(/^([+-]?d*.?d+)/);
         
         if (matchVal) {
           const repChangeValue = parseFloat(matchVal[1]);
@@ -389,6 +389,13 @@ function setupTypeBar() {
       document.querySelectorAll('#type-bar .nav-btn').forEach(b => b.classList.remove('selected-type'));
       e.target.classList.add('selected-type');
       selectedType = e.target.dataset.type;
+      
+      // Resetea el filtro a ALL al cambiar de pestaña para evitar bugs
+      statusFilter = "ALL";
+      document.querySelectorAll('.btn-filter').forEach(b => {
+        b.classList.toggle('active', b.dataset.filter === "ALL");
+      });
+
       renderBars();
       renderQuests();
     });
@@ -439,9 +446,8 @@ function renderBars() {
 
   if (statusFilters) {
     const needsSearch = ["SIDE", "HIDEOUT", "ITEMS"].includes(selectedType);
-    const needsButtons = selectedType === "SIDE";
 
-    if (!needsSearch && !needsButtons) {
+    if (!needsSearch && selectedType !== "SIDE") {
       statusFilters.style.display = 'none';
     } else {
       statusFilters.style.display = 'flex';
@@ -451,9 +457,42 @@ function renderBars() {
       searchInput.style.display = needsSearch ? 'inline-block' : 'none';
     }
 
+    // Ocultar todos los botones por defecto
     statusFilters.querySelectorAll('.btn-filter').forEach(btn => {
-      btn.style.display = needsButtons ? 'inline-block' : 'none';
+      btn.style.display = 'none';
     });
+
+    if (selectedType === "SIDE") {
+      statusFilters.querySelectorAll('.btn-filter:not(.hideout-only)').forEach(btn => {
+        btn.style.display = 'inline-block';
+      });
+    } else if (selectedType === "HIDEOUT") {
+      // Crear botones dedicados al Hideout si no existen aún
+      if (!document.getElementById('hideout-filter-all')) {
+        const createBtn = (id, text, filterVal, isActive) => {
+          const b = document.createElement('button');
+          b.id = id;
+          b.className = `btn-filter hideout-only ${isActive ? 'active' : ''}`;
+          b.dataset.filter = filterVal;
+          b.innerText = text;
+          b.onclick = (e) => {
+            statusFilters.querySelectorAll('.hideout-only').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            statusFilter = filterVal;
+            renderQuests();
+          };
+          return b;
+        };
+        
+        statusFilters.appendChild(createBtn('hideout-filter-all', 'ALL MODULES [0]', 'ALL', true));
+        statusFilters.appendChild(createBtn('hideout-filter-tobuild', 'TO BUILD [0]', 'AVAILABLE', false));
+        statusFilters.appendChild(createBtn('hideout-filter-completed', 'COMPLETED [0]', 'COMPLETED', false));
+      }
+      
+      statusFilters.querySelectorAll('.hideout-only').forEach(btn => {
+        btn.style.display = 'inline-block';
+      });
+    }
   }
 
   if (selectedType === "MAIN") {
@@ -579,52 +618,73 @@ function renderBars() {
 function updateCounters() {
   const statsElem = document.getElementById('global-stats');
 
-  if (selectedType !== "SIDE") {
-    if (statsElem) statsElem.style.display = 'none';
-    return;
+  if (statsElem) {
+    statsElem.style.display = selectedType === "SIDE" ? 'block' : 'none';
   }
 
-  if (statsElem) statsElem.style.display = 'block';
+  if (selectedType !== "SIDE" && selectedType !== "HIDEOUT") return;
 
   const currentTasks = getFilteredTasksByType();
   
   const baseTasks = currentTasks.filter(t => {
-    if (selectedTrader !== "ALL TRADERS" && t.trader !== selectedTrader) return false;
-    if (!matchesMapFilter(t.map, selectedMap)) return false;
+    if (selectedType === "SIDE") {
+      if (selectedTrader !== "ALL TRADERS" && t.trader !== selectedTrader) return false;
+      if (!matchesMapFilter(t.map, selectedMap)) return false;
+    } else if (selectedType === "HIDEOUT") {
+      if (selectedHideoutModule !== "All Modules") {
+        const target = selectedHideoutModule.toLowerCase().trim();
+        const fields = [t.chapter, t.name, t.trader, t.id].filter(Boolean);
+        const matches = fields.some(val => {
+          const s = String(val).toLowerCase().trim();
+          if (target === "generator") {
+            return s === "generator" || s.startsWith("generator level") || (s.includes("generator") && !s.includes("booze"));
+          }
+          return s.includes(target);
+        });
+
+        if (!matches) return false;
+      }
+    }
     return true;
   });
 
   const total = baseTasks.length;
   const completed = baseTasks.filter(t => progress[t.id]).length;
-  const pct = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
   
-  if (statsElem) {
-    statsElem.innerText = `Total: ${completed} / ${total} (${pct}%)`;
+  if (selectedType === "SIDE") {
+    const pct = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+    if (statsElem) statsElem.innerText = `Total: ${completed} / ${total} (${pct}%)`;
+
+    document.querySelectorAll('#trader-bar .nav-btn').forEach(btn => btn.innerText = btn.dataset.trader);
+    document.querySelectorAll('#map-bar .nav-btn').forEach(btn => btn.innerText = btn.dataset.map);
+
+    const activeCount = baseTasks.filter(t => progress[`${t.id}_pinned`]).length;
+    const availableCount = baseTasks.filter(t => !progress[t.id]).length;
+    const kappaCount = baseTasks.filter(t => t.kappa).length;
+
+    const allBtn = document.querySelector('#status-filters button[data-filter="ALL"]:not(.hideout-only)');
+    const activeBtn = document.querySelector('#status-filters button[data-filter="ACTIVE"]:not(.hideout-only)');
+    const availableBtn = document.querySelector('#status-filters button[data-filter="AVAILABLE"]:not(.hideout-only)');
+    const kappaBtn = document.querySelector('#status-filters button[data-filter="KAPPA"]:not(.hideout-only)');
+    const completedBtn = document.querySelector('#status-filters button[data-filter="COMPLETED"]:not(.hideout-only)');
+
+    if (allBtn) allBtn.innerText = `ALL [${total}]`;
+    if (activeBtn) activeBtn.innerText = `ACTIVE [${activeCount}]`;
+    if (availableBtn) availableBtn.innerText = `AVAILABLE [${availableCount}]`;
+    if (kappaBtn) kappaBtn.innerText = `KAPPA [${kappaCount}]`;
+    if (completedBtn) completedBtn.innerText = `COMPLETED [${completed}]`;
+    
+  } else if (selectedType === "HIDEOUT") {
+    const toBuildCount = baseTasks.filter(t => !progress[t.id]).length;
+    
+    const hAllBtn = document.getElementById('hideout-filter-all');
+    const hToBuildBtn = document.getElementById('hideout-filter-tobuild');
+    const hCompletedBtn = document.getElementById('hideout-filter-completed');
+
+    if (hAllBtn) hAllBtn.innerText = `ALL MODULES [${total}]`;
+    if (hToBuildBtn) hToBuildBtn.innerText = `TO BUILD [${toBuildCount}]`;
+    if (hCompletedBtn) hCompletedBtn.innerText = `COMPLETED [${completed}]`;
   }
-
-  document.querySelectorAll('#trader-bar .nav-btn').forEach(btn => {
-    btn.innerText = btn.dataset.trader;
-  });
-
-  document.querySelectorAll('#map-bar .nav-btn').forEach(btn => {
-    btn.innerText = btn.dataset.map;
-  });
-
-  const activeCount = baseTasks.filter(t => progress[`${t.id}_pinned`]).length;
-  const availableCount = baseTasks.filter(t => !progress[t.id]).length;
-  const kappaCount = baseTasks.filter(t => t.kappa).length;
-
-  const allBtn = document.querySelector('#status-filters button[data-filter="ALL"]');
-  const activeBtn = document.querySelector('#status-filters button[data-filter="ACTIVE"]');
-  const availableBtn = document.querySelector('#status-filters button[data-filter="AVAILABLE"]');
-  const kappaBtn = document.querySelector('#status-filters button[data-filter="KAPPA"]');
-  const completedBtn = document.querySelector('#status-filters button[data-filter="COMPLETED"]');
-
-  if (allBtn) allBtn.innerText = `ALL [${total}]`;
-  if (activeBtn) activeBtn.innerText = `ACTIVE [${activeCount}]`;
-  if (availableBtn) availableBtn.innerText = `AVAILABLE [${availableCount}]`;
-  if (kappaBtn) kappaBtn.innerText = `KAPPA [${kappaCount}]`;
-  if (completedBtn) completedBtn.innerText = `COMPLETED [${completed}]`;
 }
 
 function getNeededItems() {
@@ -654,7 +714,7 @@ function getNeededItems() {
     let count = 1;
     let cleanName = reqStr.trim();
 
-    const matchX = cleanName.match(/^(\d+)\s*x\s*(.+)$/i) || cleanName.match(/^(.+)\s*x\s*(\d+)$/i);
+    const matchX = cleanName.match(/^(d+)s*xs*(.+)$/i) || cleanName.match(/^(.+)s*xs*(d+)$/i);
     if (matchX) {
       if (!isNaN(matchX[1])) {
         count = parseInt(matchX[1], 10);
@@ -664,7 +724,7 @@ function getNeededItems() {
         cleanName = matchX[1].trim();
       }
     } else {
-      const matchSpace = cleanName.match(/^(\d+)\s+(.+)$/);
+      const matchSpace = cleanName.match(/^(d+)s+(.+)$/);
       if (matchSpace) {
         count = parseInt(matchSpace[1], 10);
         cleanName = matchSpace[2].trim();
@@ -993,7 +1053,7 @@ function renderQuests() {
     };
 
     document.getElementById('btn-wipe-reset').onclick = async () => {
-      const confirmed = confirm("⚠️ Are you sure you want to reset all progress for the new Wipe?\nThis action cannot be undone.");
+      const confirmed = confirm("⚠️ Are you sure you want to reset all progress for the new Wipe?nThis action cannot be undone.");
       if (confirmed) {
         progress = {};
         if (invoke) {
@@ -1088,7 +1148,7 @@ function renderQuests() {
             </h3>
             <div class="keys-list">
               ${keysList.length > 0 ? keysList.map(keyName => {
-                const keyId = `key_${selectedOnlyMap.replace(/\s+/g, '')}_${keyName.replace(/\s+/g, '')}`;
+                const keyId = `key_${selectedOnlyMap.replace(/s+/g, '')}_${keyName.replace(/s+/g, '')}`;
                 const isChecked = !!progress[keyId];
 
                 return `
@@ -1328,6 +1388,10 @@ function renderQuests() {
 
         if (!matches) return false;
       }
+      
+      // Aplicar filtros exclusivos del Hideout
+      if (statusFilter === "AVAILABLE" && progress[t.id]) return false;
+      if (statusFilter === "COMPLETED" && !progress[t.id]) return false;
     }
 
     if (searchQuery) {
@@ -1353,12 +1417,20 @@ function renderQuests() {
 
     const card = document.createElement('div');
     card.className = 'quest-card';
+    
+    const foldKey = `${task.id}_folded`;
+    const isFolded = progress[foldKey] === true;
+
 
     card.innerHTML = `
-      <div class="card-header">
-        <span class="quest-title" style="cursor: pointer; color: ${isCompleted ? '#4caf50' : (task.kappa ? '#c2a649' : '#3894ff')}">
-          ${task.kappa ? '★ ' : ''}${task.name} ${task.wiki_url ? '🔗' : ''}
-        </span>
+      <div class="card-header" style="cursor: pointer;" title="Click to expand/collapse details">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="toggle-icon" style="font-size: 0.8rem; color: var(--accent-gold, #d2b98a);">${isFolded ? '▼' : '▲'}</span>
+          <span class="quest-title" style="color: ${isCompleted ? '#4caf50' : (task.kappa ? '#c2a649' : '#3894ff')}">
+            ${task.kappa ? '★ ' : ''}${task.name}
+          </span>
+          ${task.wiki_url ? `<a href="#" class="wiki-link" style="text-decoration: none; font-size: 1rem;">🔗</a>` : ''}
+        </div>
         <div class="right-column">
           <div class="badges-and-actions">
             ${task.kappa ? `<span class="badge badge-kappa">★ Kappa</span>` : ''}
@@ -1377,27 +1449,48 @@ function renderQuests() {
         </div>
       </div>
 
-      <div class="objectives-list">
-        ${reqList.map((obj, i) => {
-          const key = `${task.id}_obj_${i}`;
-          const checked = !!progress[key];
-          const isOptional = typeof obj === 'string' && obj.startsWith('(Optional)');
-          return `
-            <label class="objective-item ${isOptional ? 'optional-objective' : ''}" style="color: ${checked ? '#5c6370' : (isOptional ? '#9a9a9a' : '#e0e0e0')}">
-              <input type="checkbox" data-key="${key}" ${checked ? 'checked' : ''}>
-              ${obj}
-            </label>
-          `;
-        }).join('')}
-      </div>
+      <div class="quest-body" style="display: ${isFolded ? 'none' : 'block'}; padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--line);">
+        <div class="objectives-list">
+          ${reqList.map((obj, i) => {
+            const key = `${task.id}_obj_${i}`;
+            const checked = !!progress[key];
+            const isOptional = typeof obj === 'string' && obj.startsWith('(Optional)');
+            return `
+              <label class="objective-item ${isOptional ? 'optional-objective' : ''}" style="color: ${checked ? '#5c6370' : (isOptional ? '#9a9a9a' : '#e0e0e0')}">
+                <input type="checkbox" data-key="${key}" ${checked ? 'checked' : ''}>
+                ${obj}
+              </label>
+            `;
+          }).join('')}
+        </div>
 
-      ${task.guide ? `<div class="quest-guide"><strong>GUIDE:</strong> ${task.guide}</div>` : ''}
-      ${task.rewards ? `<div class="rewards-text">REWARDS: ${task.rewards}</div>` : ''}
+        ${task.guide ? `<div class="quest-guide"><strong>GUIDE:</strong> ${task.guide}</div>` : ''}
+        ${task.rewards ? `<div class="rewards-text">REWARDS: ${task.rewards}</div>` : ''}
+      </div>
     `;
 
-    const titleElem = card.querySelector('.quest-title');
-    if (titleElem && task.wiki_url) {
-      titleElem.onclick = (e) => {
+    // Handle folding/unfolding logic and persist state
+    const headerElem = card.querySelector('.card-header');
+    const bodyElem = card.querySelector('.quest-body');
+    const iconElem = card.querySelector('.toggle-icon');
+
+    headerElem.addEventListener('click', async (e) => {
+      // Prevent folding if the user clicks a button, a checkbox, or the wiki link
+      if (e.target.closest('button') || e.target.closest('.wiki-link') || e.target.tagName === 'INPUT') return;
+
+      const currentlyCollapsed = bodyElem.style.display === 'none';
+      const newFoldState = !currentlyCollapsed; // if it was visible, it's now folding
+      
+      bodyElem.style.display = newFoldState ? 'none' : 'block';
+      iconElem.innerText = newFoldState ? '▼' : '▲';
+
+      // Save the state to progress and backend storage
+      await updateProgress(foldKey, newFoldState);
+    });
+
+    const wikiLink = card.querySelector('.wiki-link');
+    if (wikiLink && task.wiki_url) {
+      wikiLink.onclick = (e) => {
         e.preventDefault();
         openExternalUrl(task.wiki_url);
       };
