@@ -5,7 +5,7 @@
 /* ---------- CONFIG: edit these before publishing ---------- */
 const CONFIG = {
   repo: "https://github.com/xGhostyh/EFTarkov-Buddy",
-  version: "1.1.5",
+  version: "1.1.6",
 };
 CONFIG.releases = CONFIG.repo + "/releases";
 CONFIG.installer = `EFTarkov_Buddy_${CONFIG.version}_x64-setup.exe`;

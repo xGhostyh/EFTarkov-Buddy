@@ -33,7 +33,7 @@ async function init() {
 
     const version = await getAppVersion();
     const versionEl = document.getElementById('app-version');
-    if (versionEl) versionEl.textContent = version ? `v${version}` : 'v1.1.5';
+    if (versionEl) versionEl.textContent = version ? `v${version}` : 'v1.1.6';
   } catch (err) {
     console.error("Data loading error from Rust:", err);
     showError(err);

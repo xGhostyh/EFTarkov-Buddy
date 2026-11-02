@@ -1,4 +1,4 @@
-import { state, MAP_IMAGES, MAP_FLOOR_IMAGES, MAP_WEB_URLS, MAP_KEYS_DB, TRADERS, EDITIONS_BONUS } from './data.js';
+import { state, MAP_IMAGES, MAP_FLOOR_IMAGES, MAP_WEB_URLS, MAP_KEYS_DB, TRADERS, EDITIONS_BONUS, TRADER_REQUIREMENTS } from './data.js';
 import { isPinned, isKeyOwned, setKeyOwned, setPins, getPins, isDone, getTraderLL, getTraderRep, setTraderLL, setTraderRep, setSetting, saveProgress } from './api.js';
 import { matchesMapFilter, mapKey, esc } from './util.js';
 import { openExternalUrl } from './api.js';
@@ -7,10 +7,36 @@ import { renderQuests } from './render.js';
 import { renderBars } from './bars.js';
 
 // ==========================================
+// TRADER AUTO-LEVEL HELPER
+// ==========================================
+export async function checkAutoTraderLL(traderName) {
+  const reqs = TRADER_REQUIREMENTS[traderName];
+  if (!reqs) return;
+
+  const playerLevel = Number(state.progress.settings?.level) || 1;
+  const currentRep = getTraderRep(traderName) || 0.00;
+
+  let calculatedLL = 1;
+  for (const req of reqs) {
+    if (currentRep >= req.rep && playerLevel >= req.level) {
+      calculatedLL = req.ll;
+    }
+  }
+
+  await setTraderLL(traderName, calculatedLL);
+}
+
+export async function checkAllTradersLL() {
+  for (const traderName of Object.keys(TRADER_REQUIREMENTS)) {
+    await checkAutoTraderLL(traderName);
+  }
+}
+
+// ==========================================
 // PROFILE VIEW
 // ==========================================
 export async function changeEdition(newEditionStr) {
-  let currentEdition = state.progress.settings.edition || 'none';
+  let currentEdition = state.progress.settings?.edition || 'none';
   if (currentEdition === newEditionStr) return;
 
   for (let trader of TRADERS) {
@@ -24,27 +50,43 @@ export async function changeEdition(newEditionStr) {
       currentRep += diff;
       if (trader !== "Fence") currentRep = Math.max(0, currentRep);
       await setTraderRep(trader, Number(currentRep.toFixed(2)));
+      await checkAutoTraderLL(trader);
     }
   }
   await setSetting('edition', newEditionStr);
   renderQuests();
 }
 
-export function renderProfile(container) {
-  const userLevel = state.progress.settings.level || 1;
-  const prestigeLevel = state.progress.settings.prestige || 0;
-  const playerFaction = state.progress.settings.faction || 'usec';
+export async function renderProfile(container) {
+  const settings = state.progress.settings || {};
+  const userLevel = Number(settings.level) || 1;
+  const prestigeLevel = Number(settings.prestige) || 0;
+  const playerFaction = settings.faction || 'usec';
   
-  const edition = state.progress.settings.edition || 'none';
+  const edition = settings.edition || 'none';
   const hasEod = edition === 'eod';
   const hasUnheard = edition === 'unheard';
   
   const profileTraders = TRADERS.filter(t => t !== "ALL TRADERS");
 
-    container.innerHTML = `
+  // Compute summary stats for the profile overview
+  const allSideTasks = (state.tasks || []).filter(t => !t.is_main);
+  const completedSideTasks = allSideTasks.filter(t => isDone(t.id)).length;
+  const globalQuestPct = allSideTasks.length > 0 ? ((completedSideTasks / allSideTasks.length) * 100).toFixed(1) : "0.0";
+
+  const kappaTasks = allSideTasks.filter(t => t.kappa);
+  const completedKappa = kappaTasks.filter(t => isDone(t.id)).length;
+  const kappaPct = kappaTasks.length > 0 ? ((completedKappa / kappaTasks.length) * 100).toFixed(1) : "0.0";
+
+  const allHideoutTasks = state.hideoutTasks || [];
+  const completedHideout = allHideoutTasks.filter(t => isDone(t.id)).length;
+  const hideoutPct = allHideoutTasks.length > 0 ? ((completedHideout / allHideoutTasks.length) * 100).toFixed(1) : "0.0";
+
+  container.innerHTML = `
     <div class="profile-container">
+      
+      <!-- Top Row Level/Edition Cards -->
       <div class="profile-top-row">
-        
         <div class="level-card">
           <div class="level-info" style="justify-content: space-evenly;">
             <span class="level-label">Faction</span>
@@ -99,15 +141,49 @@ export function renderProfile(container) {
         </div>
       </div>
 
+      <!-- Overview Stats Panel (3 Columns) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: var(--surface); border: 1px solid var(--border); padding: 16px; text-align: center;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div style="font-family: var(--f-mono); font-size: 10px; color: var(--text-mute); text-transform: uppercase;">Overall Quest Completion</div>
+          <div style="font-family: var(--f-head); font-size: 20px; color: var(--text); margin-top: 2px;">
+            ${completedSideTasks} / ${allSideTasks.length} <span style="font-size: 14px; color: var(--accent);">(${globalQuestPct}%)</span>
+          </div>
+          <div class="progress-bar-bg" style="margin-top: 6px; width: 100%;">
+            <div class="progress-bar-fill" style="width: ${globalQuestPct}%;"></div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div style="font-family: var(--f-mono); font-size: 10px; color: var(--text-mute); text-transform: uppercase;">Collector (Kappa) Progress</div>
+          <div style="font-family: var(--f-head); font-size: 20px; color: var(--accent); margin-top: 2px;">
+            ${completedKappa} / ${kappaTasks.length} <span style="font-size: 14px;">(${kappaPct}%)</span>
+          </div>
+          <div class="progress-bar-bg" style="margin-top: 6px; width: 100%;">
+            <div class="progress-bar-fill" style="width: ${kappaPct}%; background-color: var(--accent);"></div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <div style="font-family: var(--f-mono); font-size: 10px; color: var(--text-mute); text-transform: uppercase;">Hideout Modules Completed</div>
+          <div style="font-family: var(--f-head); font-size: 20px; color: var(--text); margin-top: 2px;">
+            ${completedHideout} / ${allHideoutTasks.length} <span style="font-size: 14px; color: var(--accent);">(${hideoutPct}%)</span>
+          </div>
+          <div class="progress-bar-bg" style="margin-top: 6px; width: 100%;">
+            <div class="progress-bar-fill" style="width: ${hideoutPct}%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Traders Grid -->
       <div class="traders-grid">
         ${profileTraders.map(trader => {
-          const traderTasks = state.tasks.filter(t => !t.is_main && t.trader === trader);
+          const traderTasks = (state.tasks || []).filter(t => !t.is_main && t.trader === trader);
           const totalTasks = traderTasks.length;
           const completedTasks = traderTasks.filter(t => isDone(t.id)).length;
           const pct = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0.0";
 
           const currentLL = getTraderLL(trader);
-          const currentRep = getTraderRep(trader).toFixed(2);
+          const currentRep = Number(getTraderRep(trader) || 0).toFixed(2);
 
           return `
             <div class="trader-card">
@@ -141,6 +217,7 @@ export function renderProfile(container) {
         }).join('')}
       </div>
 
+      <!-- Progress Backup Section -->
       <div class="backup-section">
         <h3>Progress Backup</h3>
         <p style="color: var(--text-dim); font-size: 11px; margin: 0; font-family: var(--f-mono); text-transform: uppercase;">Export your progress before the new season/wipe/prestige level or restore a previous backup.</p>
@@ -151,47 +228,65 @@ export function renderProfile(container) {
           <button class="btn-backup btn-danger" id="btn-wipe-reset">Wipe / Reset Progress</button>
         </div>
       </div>
+
     </div>
   `;
 
+  // --- EVENT LISTENERS ---
+
   const checkEod = document.getElementById('check-eod');
-  checkEod.onchange = async (e) => await changeEdition(e.target.checked ? 'eod' : 'none');
+  if (checkEod) {
+    checkEod.onchange = async (e) => await changeEdition(e.target.checked ? 'eod' : 'none');
+  }
 
   const checkUnheard = document.getElementById('check-unheard');
-  checkUnheard.onchange = async (e) => await changeEdition(e.target.checked ? 'unheard' : 'none');
+  if (checkUnheard) {
+    checkUnheard.onchange = async (e) => await changeEdition(e.target.checked ? 'unheard' : 'none');
+  }
 
-  document.getElementById('btn-faction-usec').onclick = async () => { await setSetting('player_faction', 'usec'); renderQuests(); };
-  document.getElementById('btn-faction-bear').onclick = async () => { await setSetting('player_faction', 'bear'); renderQuests(); };
+  document.getElementById('btn-faction-usec')?.addEventListener('click', async () => { 
+    await setSetting('faction', 'usec'); 
+    renderQuests(); 
+  });
 
-  document.getElementById('btn-level-up').onclick = async () => {
-    const next = userLevel + 1;
-    await setSetting('player_level', next);
-    document.getElementById('profile-level-val').innerText = next;
-  };
-  document.getElementById('btn-level-down').onclick = async () => {
-    if (userLevel > 1) {
-      const next = userLevel - 1;
-      await setSetting('player_level', next);
-      document.getElementById('profile-level-val').innerText = next;
+  document.getElementById('btn-faction-bear')?.addEventListener('click', async () => { 
+    await setSetting('faction', 'bear'); 
+    renderQuests(); 
+  });
+
+  document.getElementById('btn-level-up')?.addEventListener('click', async () => {
+    const current = Number(state.progress.settings?.level) || 1;
+    await setSetting('level', current + 1);
+    await checkAllTradersLL();
+    renderQuests();
+  });
+
+  document.getElementById('btn-level-down')?.addEventListener('click', async () => {
+    const current = Number(state.progress.settings?.level) || 1;
+    if (current > 1) {
+      await setSetting('level', current - 1);
+      await checkAllTradersLL();
+      renderQuests();
     }
-  };
+  });
 
-  document.getElementById('btn-prestige-up').onclick = async () => {
-    if (prestigeLevel < 6) {
-      const next = prestigeLevel + 1;
-      await setSetting('player_prestige', next);
-      document.getElementById('profile-prestige-val').innerText = next;
+  document.getElementById('btn-prestige-up')?.addEventListener('click', async () => {
+    const current = Number(state.progress.settings?.prestige) || 0;
+    if (current < 6) {
+      await setSetting('prestige', current + 1);
+      renderQuests();
     }
-  };
-  document.getElementById('btn-prestige-down').onclick = async () => {
-    if (prestigeLevel > 0) {
-      const next = prestigeLevel - 1;
-      await setSetting('player_prestige', next);
-      document.getElementById('profile-prestige-val').innerText = next;
-    }
-  };
+  });
 
-  document.getElementById('btn-export-progress').onclick = () => {
+  document.getElementById('btn-prestige-down')?.addEventListener('click', async () => {
+    const current = Number(state.progress.settings?.prestige) || 0;
+    if (current > 0) {
+      await setSetting('prestige', current - 1);
+      renderQuests();
+    }
+  });
+
+  document.getElementById('btn-export-progress')?.addEventListener('click', () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.progress, null, 2));
     const downloadAnchor = document.createElement('a');
     const date = new Date().toISOString().slice(0, 10);
@@ -201,57 +296,60 @@ export function renderProfile(container) {
     downloadAnchor.click();
     downloadAnchor.remove();
     showToast("Saved on Downloads folder");
-  };
+  });
 
   const fileInput = document.getElementById('import-file-input');
-  document.getElementById('btn-import-progress').onclick = () => fileInput.click();
-  fileInput.onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const imported = JSON.parse(event.target.result);
-        if (imported && typeof imported === 'object' && imported.schemaVersion === 2) {
-          state.progress = imported;
-          await saveProgress(state.progress);
-          renderQuests();
-          showToast("Backup imported successfully!");
-        } else {
-          alert("⚠️ Invalid backup file format or outdated schema.");
+  document.getElementById('btn-import-progress')?.addEventListener('click', () => fileInput?.click());
+  
+  if (fileInput) {
+    fileInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (imported && typeof imported === 'object' && imported.schemaVersion === 2) {
+            state.progress = imported;
+            await saveProgress(state.progress);
+            renderQuests();
+            showToast("Backup imported successfully!");
+          } else {
+            alert("⚠️ Invalid backup file format or outdated schema.");
+          }
+        } catch (err) {
+          alert("⚠️ Error parsing backup file.");
         }
-      } catch (err) {
-        alert("⚠️ Error parsing backup file.");
-      }
+      };
+      reader.readAsText(file);
     };
-    reader.readAsText(file);
-  };
+  }
 
-  document.getElementById('btn-wipe-reset').onclick = async () => {
+  document.getElementById('btn-wipe-reset')?.addEventListener('click', async () => {
     if (confirm("⚠️ Are you sure you want to reset all progress?\nThis cannot be undone.")) {
       state.progress = { schemaVersion: 2, settings: {}, traders: {}, quests: {}, pins: {}, keys: {} };
       await saveProgress(state.progress);
       renderQuests();
       showToast("Wipe reset completed.");
     }
-  };
+  });
 
   container.querySelectorAll('.loyalty-btn').forEach(btn => {
     btn.onclick = async (e) => {
-      const trader = e.target.dataset.trader;
-      const ll = e.target.dataset.ll;
+      const trader = e.currentTarget.dataset.trader;
+      const ll = e.currentTarget.dataset.ll;
       await setTraderLL(trader, ll);
-      const parent = e.target.parentElement;
-      parent.querySelectorAll('.loyalty-btn').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
+      renderQuests();
     };
   });
 
   container.querySelectorAll('.rep-input').forEach(input => {
     input.onchange = async (e) => {
-      const trader = e.target.dataset.trader;
-      const val = parseFloat(e.target.value) || 0.00;
+      const trader = e.currentTarget.dataset.trader;
+      const val = parseFloat(e.currentTarget.value) || 0.00;
       await setTraderRep(trader, val.toFixed(2));
+      await checkAutoTraderLL(trader);
+      renderQuests();
     };
   });
 }
@@ -285,7 +383,7 @@ export function renderMaps(container) {
   const keysList = MAP_KEYS_DB[state.selectedOnlyMap] || [];
   const wikiUrl = "https://escapefromtarkov.fandom.com/wiki/Keys_%26_Intel#Keys_&_Keycards";
 
-  const mapFilteredQuests = state.tasks.filter(t => {
+  const mapFilteredQuests = (state.tasks || []).filter(t => {
     return matchesMapFilter(t.map, state.selectedOnlyMap) && isPinned(t.id);
   });
 

@@ -8,9 +8,10 @@ import { renderQuests } from './render.js';
 import { updateCounters } from './bars.js';
 
 export function renderQuestCard(task, showPinBtn) {
-  const completed = isDone(task.id);
-  const pinned = isPinned(task.id);
-  const folded = isFolded(task.id);
+  const taskId = String(task.id);
+  const completed = isDone(taskId);
+  const pinned = isPinned(taskId);
+  const folded = isFolded(taskId);
   const reqList = task.objectives || task.requirements || [];
 
   const card = document.createElement('div');
@@ -48,11 +49,11 @@ export function renderQuestCard(task, showPinBtn) {
     <div class="quest-body" style="display: ${folded ? 'none' : 'block'}; padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--border);">
       <div class="objectives-list">
         ${reqList.map((obj, i) => {
-          const isChecked = isObjectiveDone(task.id, i);
+          const isChecked = isObjectiveDone(taskId, i);
           const isOpt = typeof obj === 'string' && obj.startsWith('(Optional)');
           return `
             <label class="objective-item ${isOpt ? 'optional-objective' : ''}" style="color: ${isChecked ? 'var(--text-mute)' : (isOpt ? 'var(--text-mute)' : 'var(--text)')}">
-              <input type="checkbox" data-task="${task.id}" data-index="${i}" ${isChecked ? 'checked' : ''}>
+              <input type="checkbox" data-task="${taskId}" data-index="${i}" ${isChecked ? 'checked' : ''}>
               ${esc(obj)}
             </label>
           `;
@@ -73,7 +74,7 @@ export function renderQuestCard(task, showPinBtn) {
     bodyElem.style.display = currentlyCollapsed ? 'block' : 'none';
     iconElem.innerText = currentlyCollapsed ? '▲' : '▼';
     iconElem.setAttribute('aria-expanded', String(currentlyCollapsed));
-    await setQuestFolded(task.id, !currentlyCollapsed);
+    await setQuestFolded(taskId, !currentlyCollapsed);
   });
 
   // Wiki Link
@@ -86,7 +87,7 @@ export function renderQuestCard(task, showPinBtn) {
   const completeBtn = card.querySelector('.btn-complete');
   completeBtn.onclick = async () => {
     const willComplete = !completed;
-    await setQuestDone(task.id, willComplete);
+    await setQuestDone(taskId, willComplete);
     await applyQuestReputation(task, willComplete);
     
     renderQuests(); 
@@ -98,7 +99,7 @@ export function renderQuestCard(task, showPinBtn) {
   if (pinBtn) {
     pinBtn.onclick = async () => {
       const newPinnedState = !pinned;
-      await setQuestPinned(task.id, newPinnedState);
+      await setQuestPinned(taskId, newPinnedState);
       renderQuests();
       updateCounters();
     };
@@ -107,26 +108,39 @@ export function renderQuestCard(task, showPinBtn) {
   // Checkboxes
   card.querySelectorAll('.objectives-list input[type="checkbox"]').forEach(chk => {
     chk.onchange = async (e) => {
-      const taskId = e.target.dataset.task;
+      const tId = String(e.target.dataset.task);
       const idx = parseInt(e.target.dataset.index, 10);
-      await setObjectiveDone(taskId, idx, e.target.checked);
+      const isChecked = e.target.checked;
+      
+      // Save objective
+      await setObjectiveDone(tId, idx, isChecked);
       
       const parentLabel = e.target.parentElement;
-      const isOpt = parentLabel.classList.contains('optional-objective');
-      parentLabel.style.color = e.target.checked ? 'var(--text-mute)' : (isOpt ? 'var(--text-mute)' : 'var(--text)');
+      if (parentLabel) {
+        const isOpt = parentLabel.classList.contains('optional-objective');
+        parentLabel.style.color = isChecked ? 'var(--text-mute)' : (isOpt ? 'var(--text-mute)' : 'var(--text)');
+      }
 
-      // Auto-complete quest if all objectives are checked
-      const allCheckboxes = card.querySelectorAll('.objectives-list input[type="checkbox"]');
-      const allChecked = Array.from(allCheckboxes).every(box => box.checked);
-      
-      if (allChecked && !isDone(taskId)) {
-        await setQuestDone(taskId, true);
+      // Check all non-optional checkboxes in this card
+      const allCheckboxes = Array.from(card.querySelectorAll('.objectives-list input[type="checkbox"]'));
+      const requiredCheckboxes = allCheckboxes.filter(box => {
+        const label = box.parentElement;
+        return !label || !label.classList.contains('optional-objective');
+      });
+
+      const targetList = requiredCheckboxes.length > 0 ? requiredCheckboxes : allCheckboxes;
+      const allChecked = targetList.every(box => box.checked);
+      const currentlyCompleted = isDone(tId);
+
+      // Auto-complete or un-complete
+      if (allChecked && !currentlyCompleted) {
+        await setQuestDone(tId, true);
         await applyQuestReputation(task, true);
-        showToast(`"${task.name}" completed!`);
+        showToast(`"${task.name}" completed!`, "success");
         renderQuests();
         updateCounters();
-      } else if (!allChecked && isDone(taskId)) {
-        await setQuestDone(taskId, false);
+      } else if (!allChecked && currentlyCompleted) {
+        await setQuestDone(tId, false);
         await applyQuestReputation(task, false);
         renderQuests();
         updateCounters();

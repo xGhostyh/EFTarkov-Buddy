@@ -4,6 +4,17 @@ export const SCHEMA_VERSION = 2;
 
 export const TRADERS = ["ALL TRADERS", "Prapor", "Therapist", "Fence", "Skier", "Peacekeeper", "Mechanic", "Ragman", "Jaeger", "Ref", "Lightkeeper", "BTR Driver"];
 
+export const TRADER_REQUIREMENTS = {
+  "Prapor":      [ { ll: 2, rep: 0.70, level: 6 },  { ll: 3, rep: 2.70, level: 21 }, { ll: 4, rep: 7.90, level: 36 } ],
+  "Therapist":   [ { ll: 2, rep: 0.60, level: 5 },  { ll: 3, rep: 2.10, level: 18 }, { ll: 4, rep: 5.80, level: 37 } ],
+  "Skier":       [ { ll: 2, rep: 0.60, level: 7 },  { ll: 3, rep: 2.10, level: 22 }, { ll: 4, rep: 5.80, level: 38 } ],
+  "Peacekeeper": [ { ll: 2, rep: 0.50, level: 8 },  { ll: 3, rep: 2.20, level: 19 }, { ll: 4, rep: 6.00, level: 37 } ],
+  "Mechanic":    [ { ll: 2, rep: 0.60, level: 12 }, { ll: 3, rep: 2.30, level: 26 }, { ll: 4, rep: 7.60, level: 40 } ],
+  "Ragman":      [ { ll: 2, rep: 0.50, level: 12 }, { ll: 3, rep: 2.00, level: 27 }, { ll: 4, rep: 6.50, level: 42 } ],
+  "Jaeger":      [ { ll: 2, rep: 0.60, level: 9 },  { ll: 3, rep: 2.10, level: 17 }, { ll: 4, rep: 7.30, level: 33 } ],
+  "Ref":         [ { ll: 2, rep: 0.25, level: 15 }, { ll: 3, rep: 0.50, level: 25 }, { ll: 4, rep: 1.20, level: 35 } ]
+};
+
 export const STORY_CHAPTERS = [
   "All Chapters", "Tour", "Falling Skies", "Batya", "The Unheard", "Blue Fire",
   "They Are Already Here", "Accidental Witness", "The Labyrinth", "The Ticket", "Boreas"
@@ -61,6 +72,8 @@ export const MAP_WEB_URLS = {
   "Lighthouse": "https://tarkov-market.com/maps/lighthouse",
   "The Lab": "https://tarkov-market.com/maps/lab"
 };
+
+
 
 export const MAP_KEYS_DB = {
   "Customs": [

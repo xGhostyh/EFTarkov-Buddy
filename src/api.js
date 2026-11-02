@@ -59,24 +59,30 @@ export async function getAppVersion() {
 }
 
 // ---------- Progress schema v1 → v2 migration ----------
-//
-// v2 shape:
-// {
-//   schemaVersion: 2,
-//   settings: { edition: 'none'|'eod'|'unheard', level, faction, prestige },
-//   traders: { Prapor: { ll, rep }, ... },
-//   quests:  { [taskId]: { done, pinned, folded, objectives: { [i]: true } } },
-//   pins:    { 'Customs_main': [{ lat, lng, text }] },
-//   keys:    { [keyId]: true }
-// }
 
 export function emptyProgress() {
-  return { schemaVersion: SCHEMA_VERSION, settings: {}, traders: {}, quests: {}, pins: {}, keys: {}, notes: ""};
+  return { 
+    schemaVersion: SCHEMA_VERSION, 
+    settings: {}, 
+    traders: {}, 
+    quests: {}, 
+    pins: {}, 
+    keys: {}, 
+    notes: ""
+  };
 }
 
 export function migrateProgress(raw) {
   if (!raw || typeof raw !== 'object') return emptyProgress();
-  if (raw.schemaVersion === SCHEMA_VERSION) return raw;
+  if (raw.schemaVersion === SCHEMA_VERSION) {
+    // Ensure nested structures are always objects
+    raw.settings = raw.settings || {};
+    raw.traders = raw.traders || {};
+    raw.quests = raw.quests || {};
+    raw.pins = raw.pins || {};
+    raw.keys = raw.keys || {};
+    return raw;
+  }
 
   // Migrate from v1 flat bag.
   const out = emptyProgress();
@@ -132,75 +138,121 @@ export function migrateProgress(raw) {
   return out;
 }
 
-// Convenience accessors — all mutation goes through these.
+// Convenience accessors — all mutation goes through these safely.
 
-export function isDone(taskId)          { return !!(state.progress.quests[taskId]?.done); }
-export function isPinned(taskId)        { return !!(state.progress.quests[taskId]?.pinned); }
-export function isFolded(taskId)        { return !!(state.progress.quests[taskId]?.folded); }
-export function isObjectiveDone(taskId, i) { return !!(state.progress.quests[taskId]?.objectives?.[i]); }
-export function isKeyOwned(keyId)       { return !!state.progress.keys[keyId]; }
-export function getTraderLL(trader)     { return state.progress.traders[trader]?.ll ?? 1; }
-export function getTraderRep(trader)    { return state.progress.traders[trader]?.rep ?? 0; }
-export function getSetting(key, fallback) { return state.progress.settings[key] ?? fallback; }
+export function isDone(taskId) { 
+  return !!(state.progress?.quests?.[taskId]?.done); 
+}
+
+export function isPinned(taskId) { 
+  return !!(state.progress?.quests?.[taskId]?.pinned); 
+}
+
+export function isFolded(taskId) { 
+  return !!(state.progress?.quests?.[taskId]?.folded); 
+}
+
+export function isObjectiveDone(taskId, i) { 
+  return !!(state.progress?.quests?.[taskId]?.objectives?.[i]); 
+}
+
+export function isKeyOwned(keyId) { 
+  return !!(state.progress?.keys?.[keyId]); 
+}
+
+export function getTraderLL(trader) { 
+  return state.progress?.traders?.[trader]?.ll ?? 1; 
+}
+
+export function getTraderRep(trader) { 
+  return state.progress?.traders?.[trader]?.rep ?? 0; 
+}
+
+export function getSetting(key, fallback) { 
+  return state.progress?.settings?.[key] ?? fallback; 
+}
 
 function ensureQuest(taskId) {
+  if (!state.progress) state.progress = emptyProgress();
+  if (!state.progress.quests) state.progress.quests = {};
   state.progress.quests[taskId] = state.progress.quests[taskId] || {};
   return state.progress.quests[taskId];
 }
+
 function ensureTrader(trader) {
+  if (!state.progress) state.progress = emptyProgress();
+  if (!state.progress.traders) state.progress.traders = {};
   state.progress.traders[trader] = state.progress.traders[trader] || {};
   return state.progress.traders[trader];
 }
 
 export async function setQuestDone(taskId, done) {
-  ensureQuest(taskId).done = !!done;
-  if (done) ensureQuest(taskId).pinned = false;
+  const q = ensureQuest(taskId);
+  q.done = !!done;
+  if (done) q.pinned = false;
   await saveProgress(state.progress);
 }
+
 export async function setQuestPinned(taskId, pinned) {
   ensureQuest(taskId).pinned = !!pinned;
   await saveProgress(state.progress);
 }
+
 export async function setQuestFolded(taskId, folded) {
   ensureQuest(taskId).folded = !!folded;
   await saveProgress(state.progress);
 }
+
 export async function setObjectiveDone(taskId, i, done) {
   const q = ensureQuest(taskId);
   q.objectives = q.objectives || {};
   q.objectives[i] = !!done;
   await saveProgress(state.progress);
 }
+
 export async function setKeyOwned(keyId, owned) {
+  if (!state.progress) state.progress = emptyProgress();
+  if (!state.progress.keys) state.progress.keys = {};
+  
   if (owned) state.progress.keys[keyId] = true;
   else delete state.progress.keys[keyId];
   await saveProgress(state.progress);
 }
+
 export async function setTraderLL(trader, ll) {
-  ensureTrader(trader).ll = ll;
+  ensureTrader(trader).ll = Number(ll);
   await saveProgress(state.progress);
 }
+
 export async function setTraderRep(trader, rep) {
-  ensureTrader(trader).rep = rep;
+  ensureTrader(trader).rep = Number(rep);
   await saveProgress(state.progress);
 }
+
 export async function setSetting(key, val) {
+  if (!state.progress) state.progress = emptyProgress();
+  if (!state.progress.settings) state.progress.settings = {};
   state.progress.settings[key] = val;
   await saveProgress(state.progress);
 }
+
 export async function setPins(mapKey, pins) {
+  if (!state.progress) state.progress = emptyProgress();
+  if (!state.progress.pins) state.progress.pins = {};
   state.progress.pins[mapKey] = pins;
   await saveProgress(state.progress);
 }
 
 export async function setNotes(text) {
+  if (!state.progress) state.progress = emptyProgress();
   state.progress.notes = text;
   await saveProgress(state.progress);
 }
 
 export function getNotes() {
-  return state.progress.notes || "";
+  return state.progress?.notes || "";
 }
+
 export function getPins(mapKey) {
-  return state.progress.pins[mapKey] || [];
+  return state.progress?.pins?.[mapKey] || [];
 }
