@@ -20,7 +20,7 @@ export function renderQuestCard(task, showPinBtn) {
     <div class="card-header">
       <div style="display: flex; align-items: center; gap: 8px;">
         <button class="toggle-icon" aria-expanded="${!folded}" title="Expand/collapse">${folded ? '▼' : '▲'}</button>
-        <span class="quest-title" style="color: ${completed ? 'var(--ok)' : (task.kappa ? 'var(--accent)' : 'var(--text)')}">
+        <span class="quest-title" style="color: ${completed ? 'var(--ok)' : 'var(--accent)'}">
           ${task.kappa ? '<svg class="svg-icon" viewBox="0 0 24 24" style="width:14px; height:14px; color:var(--accent); margin-right:4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : ''}
           ${esc(task.name)}
         </span>
