@@ -12,6 +12,9 @@ async function init() {
   setupTypeBar();
   setupFilters();
   renderSkeleton();
+  
+  // Force layout update on initial load
+  updateLayoutClass();
 
   if (!hasBackend()) {
     showError("Could not connect to the Tauri Backend.");
@@ -25,12 +28,12 @@ async function init() {
     state.progress = progress;
 
     renderBars();
-    updateCounters();
     renderQuests();
+    updateCounters();
 
     const version = await getAppVersion();
     const versionEl = document.getElementById('app-version');
-    if (versionEl) versionEl.textContent = version ? `v${version}` : 'v1.1.1';
+    if (versionEl) versionEl.textContent = version ? `v${version}` : 'v1.1.2';
   } catch (err) {
     console.error("Data loading error from Rust:", err);
     showError(err);
@@ -45,6 +48,26 @@ function renderSkeleton() {
   for (let i = 0; i < 5; i++) container.appendChild(tpl.content.cloneNode(true));
 }
 
+function updateLayoutClass() {
+  const shell = document.querySelector('.app-shell');
+  if (!shell) return;
+  
+  // Horizontal layout is STRICTLY for Maps
+  if (state.selectedType === "MAPS") {
+    shell.classList.add('horizontal-layout');
+  } else {
+    shell.classList.remove('horizontal-layout');
+  }
+
+  // Dynamic Search Placeholder
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    if (state.selectedType === "HIDEOUT") searchInput.placeholder = "Search modules...";
+    else if (state.selectedType === "ITEMS") searchInput.placeholder = "Search items...";
+    else searchInput.placeholder = "Search quests or objectives... (press /)";
+  }
+}
+
 function setupTypeBar() {
   document.querySelectorAll('#type-bar .nav-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -52,7 +75,6 @@ function setupTypeBar() {
       e.currentTarget.classList.add('selected-type');
       state.selectedType = e.currentTarget.dataset.type;
 
-      // Reset transient filters
       state.statusFilter = "ALL";
       state.searchQuery = "";
       const searchInput = document.getElementById('search-input');
@@ -67,6 +89,10 @@ function setupTypeBar() {
       }
 
       state.activeMapKey = null;
+      
+      // Update layout BEFORE rendering
+      updateLayoutClass();
+      
       renderBars();
       renderQuests();
     });

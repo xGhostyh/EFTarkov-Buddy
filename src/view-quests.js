@@ -14,7 +14,8 @@ export function renderQuestCard(task, showPinBtn) {
   const reqList = task.objectives || task.requirements || [];
 
   const card = document.createElement('div');
-  card.className = 'quest-card';
+  // Añadimos la clase 'completed' dinámicamente para aplicar el CSS de opacidad
+  card.className = `quest-card ${completed ? 'completed' : ''}`;
 
   card.innerHTML = `
     <div class="card-header">

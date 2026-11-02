@@ -1,5 +1,6 @@
 import { state } from './data.js';
 import { esc } from './util.js';
+import { showToast } from './ui.js';
 
 export function renderItems(container, neededItems) {
   let filteredItems = neededItems.filter(item => {
@@ -17,7 +18,7 @@ export function renderItems(container, neededItems) {
 
   container.innerHTML = `
     <div style="display:flex; justify-content:flex-end; margin-bottom: 10px;">
-      <button id="btn-copy-items" class="action-btn" style="background: var(--line); color: #fff; padding: 6px 12px; border-radius: 4px; cursor:pointer;">📋 Copy List</button>
+      <button id="btn-copy-items" class="btn-copy">📋 Copy List</button>
     </div>
     <div class="items-grid">
       ${filteredItems.map(item => `
@@ -39,10 +40,24 @@ export function renderItems(container, neededItems) {
     </div>
   `;
 
-  document.getElementById('btn-copy-items')?.addEventListener('click', () => {
-    const text = filteredItems.map(i => `${i.totalCount}x ${i.name}`).join('\n');
-    navigator.clipboard.writeText(text).then(() => {
-      import('./ui.js').then(ui => ui.showToast("List copied to clipboard!", "📋"));
+  // Copy List Feature con feedback visual
+  const copyBtn = document.getElementById('btn-copy-items');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const text = filteredItems.map(i => `${i.totalCount}x ${i.name}`).join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("List copied to clipboard!", "success");
+        
+        // Efecto visual en el botón
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '✅ Copied!';
+        copyBtn.classList.add('success');
+        
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+          copyBtn.classList.remove('success');
+        }, 2000);
+      });
     });
-  });
+  }
 }
