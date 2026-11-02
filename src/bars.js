@@ -126,6 +126,8 @@ export function updateCounters() {
 
   if (state.selectedType !== "SIDE" && state.selectedType !== "HIDEOUT") return;
 
+  if (!["SIDE", "HIDEOUT"].includes(state.selectedType)) return;  
+
   const currentTasks = getFilteredTasksByType();
   
   const baseTasks = currentTasks.filter(t => {

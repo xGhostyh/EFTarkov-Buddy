@@ -102,6 +102,6 @@ export const state = {
   statusFilter: "ALL",
   searchQuery: "",
   currentLeafletMap: null,
-  // Track map identity so we only rebuild the map when it truly changes.
-  activeMapKey: null
+  activeMapKey: null,
+  notes: ""
 };

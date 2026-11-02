@@ -308,6 +308,126 @@ body {
 .toast-notification { position: fixed; top: 20px; right: 20px; background-color: var(--panel); border: 1px solid var(--sand); border-left-width: 4px; color: var(--text); font-family: var(--f-mono); padding: 14px 20px; border-radius: var(--radius); font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85); z-index: 9999; display: flex; align-items: center; gap: 10px; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; }
 .toast-notification.show { opacity: 1; transform: translateY(0); }
 
+.notes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.notes-container::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--olive-d);
+  border-top-left-radius: var(--radius);
+  border-bottom-left-radius: var(--radius);
+}
+
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.notes-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-head);
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sand);
+}
+
+.notes-icon { font-size: 1.2rem; }
+
+.notes-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notes-status {
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  min-width: 80px;
+  text-align: right;
+  transition: color 0.2s ease;
+}
+
+.notes-textarea {
+  flex: 1;
+  min-height: 200px;
+  width: 100%;
+  resize: none;
+  background-color: rgba(11, 13, 10, 0.85);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--f-mono);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 14px 16px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.notes-textarea:focus {
+  border-color: var(--olive-l);
+  box-shadow: 0 0 0 1px rgba(138, 154, 74, 0.25), 0 0 20px rgba(95, 113, 50, 0.15);
+}
+
+.notes-textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* Scrollbar dentro del textarea */
+.notes-textarea::-webkit-scrollbar { width: 8px; }
+.notes-textarea::-webkit-scrollbar-track { background: rgba(11, 13, 10, 0.5); }
+.notes-textarea::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+.notes-textarea::-webkit-scrollbar-thumb:hover { background: var(--olive-d); }
+
+.notes-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  padding-top: 4px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.notes-hint {
+  opacity: 0.7;
+  font-style: italic;
+}
+
 /* ==========================================================================
    7. RESPONSIVE
    ========================================================================== */

@@ -4,6 +4,7 @@ import { getFilteredTasksByType, matchesMapFilter, getNeededItems, esc, isMainTa
 import { renderProfile, renderMaps } from './view-maps.js';
 import { renderItems } from './view-items.js';
 import { renderQuestCard } from './view-quests.js';
+import { renderNotes } from './view-notes.js';
 
 export function renderQuests() {
   const container = document.getElementById('quests-container');
@@ -13,6 +14,7 @@ export function renderQuests() {
   if (state.selectedType === "PROFILE") return renderProfile(container);
   if (state.selectedType === "MAPS") return renderMaps(container);
   if (state.selectedType === "ITEMS") return renderItems(container, getNeededItems());
+  if (state.selectedType === "NOTES") return renderNotes(container);
 
   const currentTasks = getFilteredTasksByType();
 
@@ -39,7 +41,7 @@ export function renderQuests() {
       }
       if (state.statusFilter === "AVAILABLE" && isDone(t.id)) return false;
       if (state.statusFilter === "COMPLETED" && !isDone(t.id)) return false;
-    }
+    }else if (state.selectedType === "NOTES") return renderNotes(container);
 
     if (state.searchQuery) {
       const matchName = (t.name || "").toLowerCase().includes(state.searchQuery);

@@ -71,7 +71,7 @@ export async function getAppVersion() {
 // }
 
 export function emptyProgress() {
-  return { schemaVersion: SCHEMA_VERSION, settings: {}, traders: {}, quests: {}, pins: {}, keys: {} };
+  return { schemaVersion: SCHEMA_VERSION, settings: {}, traders: {}, quests: {}, pins: {}, keys: {}, notes: ""};
 }
 
 export function migrateProgress(raw) {
@@ -193,6 +193,14 @@ export async function setPins(mapKey, pins) {
   await saveProgress(state.progress);
 }
 
+export async function setNotes(text) {
+  state.progress.notes = text;
+  await saveProgress(state.progress);
+}
+
+export function getNotes() {
+  return state.progress.notes || "";
+}
 export function getPins(mapKey) {
   return state.progress.pins[mapKey] || [];
 }

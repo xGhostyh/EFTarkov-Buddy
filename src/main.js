@@ -33,7 +33,7 @@ async function init() {
 
     const version = await getAppVersion();
     const versionEl = document.getElementById('app-version');
-    if (versionEl) versionEl.textContent = version ? `v${version}` : 'v1.1.2';
+    if (versionEl) versionEl.textContent = version ? `v${version}` : 'v1.1.3';
   } catch (err) {
     console.error("Data loading error from Rust:", err);
     showError(err);
@@ -64,6 +64,7 @@ function updateLayoutClass() {
   if (searchInput) {
     if (state.selectedType === "HIDEOUT") searchInput.placeholder = "Search modules...";
     else if (state.selectedType === "ITEMS") searchInput.placeholder = "Search items...";
+    else if (state.selectedType === "NOTES") searchInput.placeholder = "Notes...";
     else searchInput.placeholder = "Search quests or objectives... (press /)";
   }
 }
