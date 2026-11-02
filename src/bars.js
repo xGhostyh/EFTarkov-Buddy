@@ -9,8 +9,16 @@ export function renderBars() {
   const mapsFilters = document.getElementById('maps-filters-container');
   const hideoutFilters = document.getElementById('hideout-filters-container');
   
+  const controlsBar = document.querySelector('.controls-bar');
   const statusFilters = document.getElementById('status-filters');
   const searchInput = document.getElementById('search-input');
+
+  // Types that use the top control bar
+  const needsControlsBar = ["SIDE", "HIDEOUT", "ITEMS"].includes(state.selectedType);
+
+  if (controlsBar) {
+    controlsBar.style.display = needsControlsBar ? 'flex' : 'none';
+  }
 
   if (statusFilters) {
     const needsSearch = ["SIDE", "HIDEOUT", "ITEMS"].includes(state.selectedType);

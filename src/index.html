@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tarkov Buddy</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
+  <title>EFTarkov Buddy</title>
+  
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -16,14 +13,15 @@
 </head>
 <body>
 
+  <!-- Topographic Background Canvas -->
   <canvas id="bg-canvas"></canvas>
   <div class="grain" aria-hidden="true"></div>
 
   <!-- Mobile Topbar -->
   <div class="mobile-topbar">
-    <img src="icon.png" alt="" style="width: 28px; height: 28px; object-fit: contain;">
-    <h1>EFTarkov <b>Buddy</b></h1>
-    <button id="mobile-filters-toggle" class="icon-btn" aria-label="Toggle filters" aria-expanded="false">☰</button>
+    <img src="icon.png" alt="" style="width: 24px; height: 24px; object-fit: contain; filter: grayscale(100%) sepia(50%) hue-rotate(350deg) saturate(200%);">
+    <h1 style="font-family: var(--f-head); font-size: 14px; letter-spacing: 0.1em; margin: 0; text-transform: uppercase;">EFTARKOV <b style="color: var(--accent);">BUDDY</b></h1>
+    <button id="mobile-filters-toggle" class="icon-btn" aria-label="Toggle filters" aria-expanded="false" style="margin-left: auto; background: none; border: none; color: var(--text); cursor: pointer;">☰</button>
   </div>
 
   <div class="app-shell">
@@ -31,21 +29,35 @@
     <!-- NAVIGATION & TOPBAR -->
     <header class="topbar" id="sidebar" aria-label="Primary navigation">
       <div class="topbar-brand">
-        <img src="icon.png" alt="" style="width: 28px; height: 28px; object-fit: contain;">
-        <div class="brand-title">EFTARKOV <b>BUDDY</b> <span class="brand-version" id="app-version">v1.1.4</span></div>
+        <img src="icon.png" alt="" style="width: 24px; height: 24px; object-fit: contain; filter: grayscale(100%) sepia(50%) hue-rotate(350deg) saturate(200%);">
+        <div class="brand-title">EFTARKOV <b>BUDDY</b> <span class="brand-version" id="app-version">v1.1.5</span></div>
       </div>
 
       <!-- Main Navigation -->
       <nav class="horizontal-nav" aria-label="Main navigation">
         <div class="section-label">// NAVIGATION</div>
         <div id="type-bar" class="horizontal-nav-list">
-          <button class="nav-btn" data-type="PROFILE" data-icon="👤">Profile</button>
-          <button class="nav-btn selected-type" data-type="SIDE" data-icon="📜">Side Quests</button>
-          <button class="nav-btn" data-type="MAIN" data-icon="★">Main Story</button>
-          <button class="nav-btn" data-type="MAPS" data-icon="🗺️">Maps</button>
-          <button class="nav-btn" data-type="HIDEOUT" data-icon="🏠">Hideout</button>
-          <button class="nav-btn" data-type="ITEMS" data-icon="📦">Item Tracker</button>
-          <button class="nav-btn" data-type="NOTES" data-icon="📝">Notes</button>
+          <button class="nav-btn" data-type="PROFILE">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile
+          </button>
+          <button class="nav-btn selected-type" data-type="SIDE">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Side Quests
+          </button>
+          <button class="nav-btn" data-type="MAIN">
+            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Main Story
+          </button>
+          <button class="nav-btn" data-type="MAPS">
+            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg> Maps
+          </button>
+          <button class="nav-btn" data-type="HIDEOUT">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Hideout
+          </button>
+          <button class="nav-btn" data-type="ITEMS">
+            <svg class="svg-icon" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Item Tracker
+          </button>
+          <button class="nav-btn" data-type="NOTES">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Notes
+          </button>
         </div>
       </nav>
 
@@ -91,13 +103,13 @@
     <main class="content">
       <div class="controls-bar">
         <div id="status-filters">
-          <input type="text" id="search-input" placeholder="Search quests or objectives... (press /)" aria-label="Search">
-          <button class="btn-filter active" data-filter="ALL">All</button>
-          <button class="btn-filter" data-filter="ACTIVE">Active</button>
-          <button class="btn-filter" data-filter="AVAILABLE">Available</button>
-          <button class="btn-filter btn-kappa" data-filter="KAPPA">Kappa</button>
-          <button class="btn-filter" data-filter="COMPLETED">Completed</button>
-          <div id="global-stats">Total: 0 / 0 (0.0%)</div>
+          <input type="text" id="search-input" placeholder="Search quests... (press /)" aria-label="Search">
+          <button class="btn-filter active" data-filter="ALL">ALL</button>
+          <button class="btn-filter" data-filter="ACTIVE">ACTIVE</button>
+          <button class="btn-filter" data-filter="AVAILABLE">AVAILABLE</button>
+          <button class="btn-filter btn-kappa" data-filter="KAPPA">KAPPA</button>
+          <button class="btn-filter" data-filter="COMPLETED">COMPLETED</button>
+          <div id="global-stats">TOTAL: 0 / 0 (0.0%)</div>
         </div>
       </div>
 
@@ -109,19 +121,18 @@
 
   <!-- Empty state template -->
   <template id="empty-state-tpl">
-    <div class="empty-state">
-      <div class="empty-icon" aria-hidden="true">🔍</div>
-      <div class="empty-title">Nothing matches those filters</div>
-      <div class="empty-hint">Try clearing the search, changing trader, or switching map.</div>
+    <div class="empty-state" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-mute); font-family:var(--f-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.1em; padding:40px;">
+      <svg class="svg-icon svg-icon--lg" viewBox="0 0 24 24" style="width:32px; height:32px; margin-bottom:12px; opacity:0.3;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div class="empty-title">NO MATCHES</div>
     </div>
   </template>
 
   <!-- Skeleton template -->
   <template id="skeleton-tpl">
-    <div class="skeleton-card">
-      <div class="skeleton-line skeleton-title"></div>
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line short"></div>
+    <div class="skeleton-card" style="background:var(--bg); padding:16px; border-bottom:1px solid var(--border);">
+      <div class="skeleton-line skeleton-title" style="height:16px; width:40%; background:var(--surface); margin-bottom:8px;"></div>
+      <div class="skeleton-line" style="height:12px; width:100%; background:var(--surface); margin-bottom:6px;"></div>
+      <div class="skeleton-line short" style="height:12px; width:60%; background:var(--surface);"></div>
     </div>
   </template>
 
@@ -131,13 +142,13 @@
       const bgCanvas = document.getElementById("bg-canvas");
       if (bgCanvas && window.TopoBackground) {
         TopoBackground.mount(bgCanvas, {
-          seed: Math.floor(Math.random() * 10000000),
-          bgColor: "#0b0d0a",
-          lineColor: "#8a9a4a",
-          opacity: 0.22,
-          levels: 16,
-          glow: true,
-          shade: true,
+          seed: 20261029,      // Fixed seed for consistent map
+          bgColor: null,       // Transparent background
+          lineColor: "#b8853a",// Amber accent lines
+          opacity: 0.15,       // Very subtle texture
+          levels: 14,
+          glow: false,
+          shade: false,
           grid: true
         });
       }

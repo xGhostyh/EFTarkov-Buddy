@@ -1,12 +1,11 @@
 /* ==========================================================
-   EFTarkov Buddy — landing page behaviour
+   EFTarkov Buddy — landing page behaviour (redesign)
    ========================================================== */
 
 /* ---------- CONFIG: edit these before publishing ---------- */
 const CONFIG = {
-  // Replace YOUR_USER / YOUR_REPO with your real GitHub path.
   repo: "https://github.com/xGhostyh/EFTarkov-Buddy",
-  version: "1.1.4",
+  version: "1.1.5",
 };
 CONFIG.releases = CONFIG.repo + "/releases";
 CONFIG.installer = `EFTarkov_Buddy_${CONFIG.version}_x64-setup.exe`;
@@ -22,17 +21,15 @@ document.querySelectorAll("[data-installer]").forEach((el) => (el.textContent = 
 const yearEl = document.getElementById("year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-/* ---------- Topographic background ----------
-   Value-noise height field + marching squares -> contour lines. */
+/* ---------- Topographic background ---------- */
 (function topo() {
   const svg = document.getElementById("topo");
   if (!svg) return;
 
   const W = 1600, H = 900;
-  const cols = 110, rows = Math.round(cols * H / W);
+  const cols = 100, rows = Math.round(cols * H / W);
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
 
-  // seeded RNG so the map is stable between visits
   let seed = 20261029;
   const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
 
@@ -64,8 +61,7 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
   }
 
   const cw = W / cols, ch = H / rows;
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const levels = 16, lo = 0.2, hi = 0.8;
+  const levels = 14, lo = 0.2, hi = 0.8;
   const NS = "http://www.w3.org/2000/svg";
 
   for (let l = 0; l < levels; l++) {
@@ -104,17 +100,6 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
     p.setAttribute("class", l % 4 === 0 ? "major" : "minor");
     svg.appendChild(p);
   }
-
-  // faint grid ticks, like map coordinates
-  const grid = document.createElementNS(NS, "path");
-  let g = "";
-  for (let x = 0; x <= W; x += 160) g += `M${x} 0V${H}`;
-  for (let y = 0; y <= H; y += 160) g += `M0 ${y}H${W}`;
-  grid.setAttribute("d", g);
-  grid.setAttribute("class", "minor");
-  grid.style.opacity = ".18";
-  grid.style.strokeDasharray = "2 8";
-  svg.appendChild(grid);
 })();
 
 /* ---------- Sticky nav shadow ---------- */
@@ -152,21 +137,21 @@ function selectTab(i, focus) {
 tabs.forEach((t, i) => {
   t.addEventListener("click", () => selectTab(i));
   t.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight") selectTab((i + 1) % tabs.length, true);
-    if (e.key === "ArrowLeft") selectTab((i - 1 + tabs.length) % tabs.length, true);
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") selectTab((i + 1) % tabs.length, true);
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") selectTab((i - 1 + tabs.length) % tabs.length, true);
   });
 });
-if (tabs.length) selectTab(0);
+if (tabs.length) selectTab(tabs.findIndex(t => t.classList.contains("is-active")) || 0);
 
 /* ---------- Real screenshots replace placeholders automatically ----------
    Drop files in docs/screenshots/ with the names listed in index.html.
-   If a file is missing, the placeholder simply stays. */
+   If a file is missing, the placeholder stays. */
 const SHOT_EXTS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG", "WEBP"];
 document.querySelectorAll(".shot[data-src]").forEach((shot) => {
   const base = shot.dataset.src.replace(/\.[^.\/]+$/, "");
   let n = 0;
   const tryNext = () => {
-    if (n >= SHOT_EXTS.length) return; // nothing found: keep placeholder
+    if (n >= SHOT_EXTS.length) return;
     const img = new Image();
     img.alt = shot.dataset.alt || "EFTarkov Buddy screenshot";
     img.decoding = "async";
@@ -182,25 +167,24 @@ document.querySelectorAll(".shot[data-src]").forEach((shot) => {
   tryNext();
 });
 
-/* ---------- Reveal on scroll ---------- */
+/* ---------- Reveal (snap, cheap) ---------- */
 const revealEls = document.querySelectorAll(".reveal");
 if ("IntersectionObserver" in window) {
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((en) => {
         if (en.isIntersecting) {
-          en.target.classList.add("is-in");
+          en.target.style.animation = "snap 120ms linear both";
           io.unobserve(en.target);
         }
       });
     },
-    { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
   );
-  // small stagger for items inside the same grid
-  document.querySelectorAll(".cards, .steps").forEach((group) => {
-    [...group.querySelectorAll(".reveal")].forEach((el, i) => el.style.setProperty("--d", i * 0.08 + "s"));
+  revealEls.forEach((el) => {
+    el.style.opacity = "0";
+    io.observe(el);
   });
-  revealEls.forEach((el) => io.observe(el));
 } else {
-  revealEls.forEach((el) => el.classList.add("is-in"));
+  revealEls.forEach((el) => (el.style.opacity = "1"));
 }

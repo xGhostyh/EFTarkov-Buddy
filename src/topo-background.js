@@ -6,33 +6,21 @@
 
    Plain JavaScript, no dependencies. Works in any webview
    (Tauri / WebView2 included).
-
-   USAGE (live background):
-     <canvas id="bg"></canvas>
-     <script src="topo-background.js"></script>
-     <script>
-       TopoBackground.mount(document.getElementById("bg"), { seed: 20261029 });
-     </script>
-
-   USAGE (export a PNG at any resolution):
-     const blob = await TopoBackground.exportPNG(7680, 4320, { seed: 7 });
-
-   The same seed + same aspect ratio always gives the same map.
    ========================================================== */
 (function (root) {
   "use strict";
 
   const DEFAULTS = {
     seed: 20261029,        // change it to get a different terrain
-    bgColor: "#0b0d0a",    // null = transparent (lines only)
-    lineColor: "#8a9a4a",
-    opacity: 0.22,         // overall strength of the lines (0-1)
-    levels: 16,            // number of contour levels
-    cell: 0,               // grid cell in px; 0 = automatic (smaller = smoother, slower)
-    glow: true,            // soft olive glow top-left
-    shade: true,           // dark gradient at the bottom
+    bgColor: null,         // null = transparent (lines only)
+    lineColor: "#b8853a",  // Tarkov amber accent
+    opacity: 0.08,         // Very subtle so it doesn't distract from UI
+    levels: 14,            // number of contour levels
+    cell: 0,               // grid cell in px; 0 = automatic
+    glow: false,           // soft glow (off for app)
+    shade: false,          // dark gradient (off for app)
     grid: true,            // faint dotted coordinate grid
-    maxSide: 8192,         // safety cap for mount() (longest side, in px)
+    maxSide: 4096,         // safety cap for app performance
   };
 
   /* ---------- deterministic value noise (no stored state) ---------- */
@@ -64,8 +52,8 @@
   function render(ctx, w, h, options) {
     const o = Object.assign({}, DEFAULTS, options);
     const long = Math.max(w, h);
-    const s = 1 / long;                       // resolution-independent coordinates
-    const lw = long / 1920;                   // line-width scale
+    const s = 1 / long;
+    const lw = long / 1920;
 
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -128,21 +116,6 @@
       for (let y = 0; y <= h; y += step) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
       ctx.stroke();
       ctx.setLineDash([]);
-    }
-
-    // glow + bottom shade (only if there is a background to blend with)
-    ctx.globalAlpha = 1;
-    if (o.glow && o.bgColor) {
-      const g = ctx.createRadialGradient(w * 0.2, 0, 0, w * 0.2, 0, long * 0.7);
-      g.addColorStop(0, "rgba(95,113,50,0.18)");
-      g.addColorStop(1, "rgba(95,113,50,0)");
-      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-    }
-    if (o.shade && o.bgColor) {
-      const g = ctx.createLinearGradient(0, 0, 0, h);
-      g.addColorStop(0.6, "rgba(0,0,0,0)");
-      g.addColorStop(1, "rgba(0,0,0,0.55)");
-      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     }
     ctx.restore();
   }

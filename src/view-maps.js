@@ -41,38 +41,38 @@ export function renderProfile(container) {
   
   const profileTraders = TRADERS.filter(t => t !== "ALL TRADERS");
 
-  container.innerHTML = `
+    container.innerHTML = `
     <div class="profile-container">
-      <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+      <div class="profile-top-row">
         
         <div class="level-card">
           <div class="level-info" style="justify-content: space-evenly;">
             <span class="level-label">Faction</span>
-            <img id="profile-faction-img" src="./images/${playerFaction}.png" alt="Faction" style="height: 38px; object-fit: contain; margin-top: 4px;">
+            <img id="profile-faction-img" src="./images/${playerFaction}.png" alt="Faction" style="height: 32px; object-fit: contain; margin-top: 4px; filter: grayscale(1) brightness(1.5);">
           </div>
           <div class="level-controls">
-            <button class="btn-level ${playerFaction === 'usec' ? 'active' : ''}" id="btn-faction-usec" style="font-size: 0.7rem;">USEC</button>
-            <button class="btn-level ${playerFaction === 'bear' ? 'active' : ''}" id="btn-faction-bear" style="font-size: 0.7rem;">BEAR</button>
+            <button class="btn-level ${playerFaction === 'usec' ? 'active' : ''}" id="btn-faction-usec" style="font-size: 10px;">USEC</button>
+            <button class="btn-level ${playerFaction === 'bear' ? 'active' : ''}" id="btn-faction-bear" style="font-size: 10px;">BEAR</button>
           </div>
         </div>
 
         <div class="level-card">
           <div class="level-info" style="justify-content: space-evenly;">
             <span class="level-label">EOD Edition</span>
-            <img id="profile-eod-img" src="./images/eod.png" alt="EOD" style="height: 38px; object-fit: contain; margin-top: 4px; filter: ${hasEod ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: all 0.3s ease;">
+            <img id="profile-eod-img" src="./images/eod.png" alt="EOD" style="height: 32px; object-fit: contain; margin-top: 4px; filter: ${hasEod ? 'none' : 'grayscale(100%) opacity(0.3)'}; transition: all 80ms;">
           </div>
-          <div class="level-controls" style="justify-content: center; align-items: center; display: flex;">
-            <input type="checkbox" id="check-eod" ${hasEod ? 'checked' : ''} style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-gold, #d2b98a);">
+          <div class="level-controls" style="justify-content: center; align-items: center; display: flex; padding: 0 12px;">
+            <input type="checkbox" id="check-eod" ${hasEod ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
           </div>
         </div>
 
         <div class="level-card">
           <div class="level-info" style="justify-content: space-evenly;">
             <span class="level-label">Unheard Edition</span>
-            <img id="profile-unheard-img" src="./images/unheard.png" alt="Unheard" style="height: 38px; object-fit: contain; margin-top: 4px; filter: ${hasUnheard ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: all 0.3s ease;">
+            <img id="profile-unheard-img" src="./images/unheard.png" alt="Unheard" style="height: 32px; object-fit: contain; margin-top: 4px; filter: ${hasUnheard ? 'none' : 'grayscale(100%) opacity(0.3)'}; transition: all 80ms;">
           </div>
-          <div class="level-controls" style="justify-content: center; align-items: center; display: flex;">
-            <input type="checkbox" id="check-unheard" ${hasUnheard ? 'checked' : ''} style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-gold, #d2b98a);">
+          <div class="level-controls" style="justify-content: center; align-items: center; display: flex; padding: 0 12px;">
+            <input type="checkbox" id="check-unheard" ${hasUnheard ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent);">
           </div>
         </div>
 
@@ -90,7 +90,7 @@ export function renderProfile(container) {
         <div class="level-card">
           <div class="level-info">
             <span class="level-label">Prestige</span>
-            <span class="level-value" id="profile-prestige-val" style="color: var(--alert);">${prestigeLevel}</span>
+            <span class="level-value" id="profile-prestige-val" style="color: var(--accent);">${prestigeLevel}</span>
           </div>
           <div class="level-controls">
             <button class="btn-level" id="btn-prestige-up">▲</button>
@@ -115,14 +115,14 @@ export function renderProfile(container) {
                 <span class="trader-name">${esc(trader)}</span>
                 <span class="trader-pct">${pct}%</span>
               </div>
-              <div class="trader-task-count">${completedTasks}/${totalTasks} tasks</div>
+              <div class="trader-task-count">${completedTasks}/${totalTasks} TASKS</div>
               <div class="progress-bar-bg">
                 <div class="progress-bar-fill" style="width: ${pct}%;"></div>
               </div>
 
               <div class="trader-details">
                 <div class="loyalty-section">
-                  <span class="trader-label">Loyalty Level</span>
+                  <span class="trader-label">Loyalty</span>
                   <div class="loyalty-selector">
                     ${[1, 2, 3, 4].map(ll => `
                       <button class="loyalty-btn ${ll === Number(currentLL) ? 'active' : ''}" data-trader="${trader}" data-ll="${ll}">
@@ -142,13 +142,13 @@ export function renderProfile(container) {
       </div>
 
       <div class="backup-section">
-        <h3>💾 Prestige/Season Reset & Progress Backup</h3>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Export your progress before the new season/wipe/prestige level or restore a previous backup.</p>
+        <h3>Progress Backup</h3>
+        <p style="color: var(--text-dim); font-size: 11px; margin: 0; font-family: var(--f-mono); text-transform: uppercase;">Export your progress before the new season/wipe/prestige level or restore a previous backup.</p>
         <div class="backup-actions">
-          <button class="btn-backup" id="btn-export-progress">📤 Export Backup</button>
-          <button class="btn-backup" id="btn-import-progress">📥 Import Backup</button>
+          <button class="btn-backup" id="btn-export-progress">Export Backup</button>
+          <button class="btn-backup" id="btn-import-progress">Import Backup</button>
           <input type="file" id="import-file-input" accept=".json" style="display: none;">
-          <button class="btn-backup btn-danger" id="btn-wipe-reset">⚠️ Wipe / Reset Progress</button>
+          <button class="btn-backup btn-danger" id="btn-wipe-reset">Wipe / Reset Progress</button>
         </div>
       </div>
     </div>
@@ -259,17 +259,9 @@ export function renderProfile(container) {
 // Helper to calculate exact zoom requirements dynamically across screen resizes
 function fitMapToContainer(map, bounds) {
   if (!map) return;
-  
-  // 1. Tell Leaflet the DOM container size changed
   map.invalidateSize();
-  
-  // 2. Temporarily remove minZoom lock so Leaflet can calculate zoom for smaller containers
   map.setMinZoom(-10);
-  
-  // 3. Calculate the exact zoom level needed to fit the whole image
   const fitZoom = map.getBoundsZoom(bounds, false);
-  
-  // 4. Set zoom and re-apply minZoom based on the new container size
   map.setZoom(fitZoom);
   map.setMinZoom(fitZoom);
   map.fitBounds(bounds, { padding: [0, 0] });
@@ -298,12 +290,12 @@ export function renderMaps(container) {
   });
 
   container.innerHTML = `
-      <div class="map-view-card">
+    <div class="map-view-card">
       <div id="map-outer-wrapper">
         <div id="leaflet-map-container"></div>
         
         ${MAP_FLOOR_IMAGES[state.selectedOnlyMap] ? `
-          <div id="map-floor-selector" style="position: absolute; bottom: 0; left: 0; z-index: 1000; display: flex; gap: 6px; padding: 10px;">
+          <div id="map-floor-selector" style="position: absolute; bottom: 0; left: 0; z-index: 1000; display: flex; gap: 1px; padding: 10px;">
             ${Object.keys(MAP_FLOOR_IMAGES[state.selectedOnlyMap]).map((floor) => `
               <button class="map-ui-btn ${floor === state.selectedMapFloor ? 'active' : ''}" data-floor="${floor}">
                 ${floor}
@@ -313,48 +305,54 @@ export function renderMaps(container) {
         ` : ''}
 
         <div class="map-hint-tooltip">
-          💡 Click anywhere on the map to add a custom pin.
+          CLICK MAP TO ADD PIN
         </div>
 
         <div style="position: absolute; bottom: 0; right: 0; z-index: 1000; padding: 10px;">
           <button class="map-ui-btn map-ui-btn-gold" id="btn-open-interactive-map">
-            🗺️ Open Interactive Map 🔗
+            <svg class="svg-icon" viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open Interactive Map
           </button>
         </div>
       </div>
 
-      <div class="map-sidebar-panels" style="display: flex; flex-direction: column; gap: 15px; width: 340px; flex-shrink: 0; height: 100%; overflow-y: auto;">
-        <div class="map-keys-card" style="width: 100%; background-color: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px;">
-          <h3 style="margin-top: 0;">
-            <a href="${wikiUrl}" id="link-important-keys" style="color: var(--accent-gold, #d2b98a); text-decoration: none;">🔑 Important Keys 🔗</a>
+      <div class="map-sidebar-panels" style="display: flex; flex-direction: column; gap: 1px; width: 340px; flex-shrink: 0; height: 100%; overflow-y: auto; background: var(--border);">
+        <div class="map-keys-card" style="width: 100%;">
+          <h3 style="margin-top: 0; display: flex; justify-content: space-between; align-items: center; font-family: var(--f-head); font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">
+            <a href="${wikiUrl}" id="link-important-keys" style="color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 6px;">
+              <svg class="svg-icon" viewBox="0 0 24 24" style="width:16px; height:16px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              Important Keys
+            </a>
+            <svg class="svg-icon" viewBox="0 0 24 24" style="width:12px; height:12px; color: var(--text-mute);"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </h3>
           <div class="keys-list">
             ${keysList.length > 0 ? keysList.map(keyName => {
               const kId = `key_${state.selectedOnlyMap.replace(/\s+/g, '')}_${keyName.replace(/\s+/g, '')}`;
               const checked = isKeyOwned(kId);
               return `
-                <label class="key-item" style="color: ${checked ? '#4caf50' : '#e0e0e0'}; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer;">
-                  <input type="checkbox" data-key="${kId}" ${checked ? 'checked' : ''}>
+                <label class="key-item" style="color: ${checked ? 'var(--ok)' : 'var(--text)'};">
+                  <input type="checkbox" data-key="${kId}" ${checked ? 'checked' : ''} style="accent-color: var(--accent);">
                   <span>${esc(keyName)}</span>
                 </label>
               `;
-            }).join('') : `<p style="color: #888; font-size: 0.85rem;">No keys registered.</p>`}
+            }).join('') : `<p style="color: var(--text-mute); font-size: 11px; font-family: var(--f-mono); text-transform: uppercase;">No keys registered.</p>`}
           </div>
         </div>
 
-        <div class="map-quests-card" style="background-color: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
-          <h3 style="margin: 0;">
-            <a href="#" id="map-quests-title-link" style="font-family: var(--f-head); font-size: 1.15rem; color: var(--sand, #d2b98a); text-decoration: none; display: block; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
-              📌 Active Quests on ${esc(state.selectedOnlyMap)} (${mapFilteredQuests.length}) 🔗
+        <div class="map-quests-card" style="background-color: var(--bg); padding: 16px; display: flex; flex-direction: column; gap: 10px; flex: 1;">
+          <h3 style="margin: 0; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+            <a href="#" id="map-quests-title-link" style="font-family: var(--f-head); font-size: 14px; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.05em;">
+              <svg class="svg-icon" viewBox="0 0 24 24" style="width:14px; height:14px;"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
+              Active Quests (${mapFilteredQuests.length})
             </a>
           </h3>
-          <div class="map-quests-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 25vh; overflow-y: auto;">
+          <div class="map-quests-list" style="display: flex; flex-direction: column; gap: 4px; max-height: 25vh; overflow-y: auto;">
             ${mapFilteredQuests.length > 0 ? mapFilteredQuests.map(quest => `
-              <div class="map-quest-item" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 6px 8px; background-color: rgba(11, 13, 10, 0.8); border-radius: var(--radius); border: 1px solid var(--line); color: #e0e0e0;">
+              <div class="map-quest-item" style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 6px 8px; background-color: var(--surface); color: var(--text);">
                 <span style="font-family: var(--f-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">${esc(quest.name)}</span>
-                <span style="font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 3px; flex-shrink: 0;">${esc(quest.trader || 'Quest')}</span>
+                <span style="font-family: var(--f-mono); font-size: 10px; color: var(--text-mute); border: 1px solid var(--border); padding: 2px 4px; flex-shrink: 0; text-transform:uppercase;">${esc(quest.trader || 'Quest')}</span>
               </div>
-            `).join('') : `<p style="color: #888; font-size: 0.85rem;">No active (pinned) quests for this map.</p>`}
+            `).join('') : `<p style="color: var(--text-mute); font-size: 11px; font-family: var(--f-mono); text-transform: uppercase;">No active (pinned) quests for this map.</p>`}
           </div>
         </div>
       </div>
@@ -396,8 +394,6 @@ export function renderMaps(container) {
       });
 
       L.control.zoom({ position: 'topright' }).addTo(state.currentLeafletMap);
-      
-      // Grupo de capas para los pines
       state.currentPinLayer = L.layerGroup().addTo(state.currentLeafletMap);
 
       const img = new Image();
@@ -419,10 +415,11 @@ export function renderMaps(container) {
             resetBtn.href = '#';
             resetBtn.title = 'Reset Map View';
             resetBtn.innerHTML = '⛶';
-            resetBtn.style.fontSize = '15px';
+            resetBtn.style.fontSize = '14px';
             resetBtn.style.display = 'flex';
             resetBtn.style.alignItems = 'center';
             resetBtn.style.justifyContent = 'center';
+            resetBtn.style.color = 'var(--text)';
             
             resetBtn.onclick = (e) => {
               e.preventDefault();
@@ -445,7 +442,6 @@ export function renderMaps(container) {
           });
           window.mapResizeObserver.observe(mapElement);
 
-          // Refresca los pines sin recargar el mapa
           const refreshPins = () => {
             state.currentPinLayer.clearLayers();
             const savedPins = getPins(currentMapKey);
@@ -453,9 +449,9 @@ export function renderMaps(container) {
             savedPins.forEach((pin, index) => {
               const customIcon = L.divIcon({
                 className: 'custom-map-pin-wrapper',
-                html: `<div style="color: #fff; font-family: var(--f-mono); font-size: 12px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.9), -1px -1px 3px rgba(0,0,0,0.9); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">
-                        <span>📌 ${esc(pin.text)}</span>
-                        <button class="btn-delete-pin" data-idx="${index}" style="background: rgba(0,0,0,0.7); border: none; padding: 0 4px; border-radius: 2px; cursor: pointer; color: #ff8282; font-size: 10px;" title="Delete pin">✕</button>
+                html: `<div style="color: var(--accent); font-family: var(--f-mono); font-size: 11px; font-weight: 500; text-shadow: 0 1px 2px #000, 0 0 4px #000; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; background: rgba(10,10,11,0.8); padding: 2px 6px; border: 1px solid var(--border); text-transform:uppercase; letter-spacing:0.05em;">
+                        <span>${esc(pin.text)}</span>
+                        <button class="btn-delete-pin" data-idx="${index}" style="background: none; border: none; padding: 0 2px; cursor: pointer; color: #ff5252; font-size: 10px;" title="Delete pin">✕</button>
                       </div>`,
                 iconSize: null,
                 iconAnchor: [0, 12]
@@ -470,7 +466,6 @@ export function renderMaps(container) {
 
           refreshPins();
 
-          // Delegación de eventos: Gestiona tanto el borrado como la creación de pines
           state.currentLeafletMap.on('click', async (e) => {
             const deleteBtn = e.originalEvent.target.closest('.btn-delete-pin');
             
@@ -503,7 +498,7 @@ export function renderMaps(container) {
       };
       
       img.onerror = () => {
-        mapElement.innerHTML = `<div style="color: #ff8282; font-weight: bold; text-align: center; padding: 40px;">⚠️ Image not found: ${mapImgSrc}. Place it in src/images/</div>`;
+        mapElement.innerHTML = `<div style="color: #ff8282; font-family:var(--f-mono); text-transform:uppercase; padding: 40px; text-align:center;">Image not found: ${mapImgSrc}</div>`;
       };
     }
   }, 50);
@@ -535,7 +530,7 @@ export function renderMaps(container) {
     chk.onchange = async (e) => {
       await setKeyOwned(e.target.dataset.key, e.target.checked);
       const parentLabel = e.target.parentElement;
-      if (parentLabel) parentLabel.style.color = e.target.checked ? '#4caf50' : '#e0e0e0';
+      if (parentLabel) parentLabel.style.color = e.target.checked ? 'var(--ok)' : 'var(--text)';
     };
   });
 }

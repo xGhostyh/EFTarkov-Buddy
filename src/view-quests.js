@@ -14,43 +14,44 @@ export function renderQuestCard(task, showPinBtn) {
   const reqList = task.objectives || task.requirements || [];
 
   const card = document.createElement('div');
-  // Añadimos la clase 'completed' dinámicamente para aplicar el CSS de opacidad
   card.className = `quest-card ${completed ? 'completed' : ''}`;
 
   card.innerHTML = `
     <div class="card-header">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <button class="toggle-icon" aria-expanded="${!folded}" style="font-size: 0.8rem; color: var(--accent-gold, #d2b98a); cursor: pointer; padding: 2px 6px; background: none; border: none; user-select: none;" title="Expand/collapse">${folded ? '▼' : '▲'}</button>
-        <span class="quest-title" style="color: ${completed ? '#4caf50' : (task.kappa ? '#c2a649' : '#3894ff')}">
-          ${task.kappa ? '★ ' : ''}${esc(task.name)}
+        <button class="toggle-icon" aria-expanded="${!folded}" title="Expand/collapse">${folded ? '▼' : '▲'}</button>
+        <span class="quest-title" style="color: ${completed ? 'var(--ok)' : (task.kappa ? 'var(--accent)' : 'var(--text)')}">
+          ${task.kappa ? '<svg class="svg-icon" viewBox="0 0 24 24" style="width:14px; height:14px; color:var(--accent); margin-right:4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : ''}
+          ${esc(task.name)}
         </span>
-        ${task.wiki_url ? `<a href="#" class="wiki-link" style="text-decoration: none; font-size: 1rem;">🔗</a>` : ''}
+        ${task.wiki_url ? `<a href="#" class="wiki-link" style="text-decoration: none; font-size: 1rem;"><svg class="svg-icon" viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a>` : ''}
       </div>
       <div class="right-column">
         <div class="badges-and-actions">
-          ${task.kappa ? `<span class="badge badge-kappa">★ Kappa</span>` : ''}
-          ${task.map ? `<span class="badge badge-map" title="${esc(task.map)}">📍 ${esc(task.map.length > 20 ? task.map.slice(0,20)+'…' : task.map)}</span>` : ''}
+          ${task.kappa ? `<span class="badge badge-kappa"><svg class="svg-icon" viewBox="0 0 24 24" style="width:12px; height:12px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Kappa</span>` : ''}
+          ${task.map ? `<span class="badge badge-map"><svg class="svg-icon" viewBox="0 0 24 24" style="width:12px; height:12px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${esc(task.map.length > 20 ? task.map.slice(0,20)+'…' : task.map)}</span>` : ''}
           ${task.trader ? `<span class="badge badge-trader">${esc(task.trader)}</span>` : ''}
           ${showPinBtn ? `
             <button class="action-btn btn-pin ${pinned ? 'pinned' : ''}" aria-pressed="${pinned}">
-              ${pinned ? '📌 Active' : 'Pin Active'}
+              <svg class="svg-icon" viewBox="0 0 24 24" style="width:12px; height:12px;"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
+              ${pinned ? 'Pinned' : 'Pin'}
             </button>
           ` : ''}
           <button class="action-btn btn-complete ${completed ? 'done' : ''}" aria-pressed="${completed}">
-            ${completed ? '✓ Completed' : 'Complete'}
+            <svg class="svg-icon" viewBox="0 0 24 24" style="width:12px; height:12px;"><polyline points="20 6 9 17 4 12"/></svg>
+            ${completed ? 'Done' : 'Complete'}
           </button>
         </div>
-        ${task.image ? `<div class="quest-image-container"><img src="${task.image}" alt="${esc(task.name)}" class="quest-image" loading="lazy" /></div>` : ''}
       </div>
     </div>
 
-    <div class="quest-body" style="display: ${folded ? 'none' : 'block'}; padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--line);">
+    <div class="quest-body" style="display: ${folded ? 'none' : 'block'}; padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--border);">
       <div class="objectives-list">
         ${reqList.map((obj, i) => {
           const isChecked = isObjectiveDone(task.id, i);
           const isOpt = typeof obj === 'string' && obj.startsWith('(Optional)');
           return `
-            <label class="objective-item ${isOpt ? 'optional-objective' : ''}" style="color: ${isChecked ? '#5c6370' : (isOpt ? '#9a9a9a' : '#e0e0e0')}">
+            <label class="objective-item ${isOpt ? 'optional-objective' : ''}" style="color: ${isChecked ? 'var(--text-mute)' : (isOpt ? 'var(--text-mute)' : 'var(--text)')}">
               <input type="checkbox" data-task="${task.id}" data-index="${i}" ${isChecked ? 'checked' : ''}>
               ${esc(obj)}
             </label>
@@ -88,7 +89,6 @@ export function renderQuestCard(task, showPinBtn) {
     await setQuestDone(task.id, willComplete);
     await applyQuestReputation(task, willComplete);
     
-    // Manual render call to update stats and color states instantly
     renderQuests(); 
     updateCounters();
   };
@@ -111,10 +111,9 @@ export function renderQuestCard(task, showPinBtn) {
       const idx = parseInt(e.target.dataset.index, 10);
       await setObjectiveDone(taskId, idx, e.target.checked);
       
-      // Update text color locally without full re-render
       const parentLabel = e.target.parentElement;
       const isOpt = parentLabel.classList.contains('optional-objective');
-      parentLabel.style.color = e.target.checked ? '#5c6370' : (isOpt ? '#9a9a9a' : '#e0e0e0');
+      parentLabel.style.color = e.target.checked ? 'var(--text-mute)' : (isOpt ? 'var(--text-mute)' : 'var(--text)');
 
       // Auto-complete quest if all objectives are checked
       const allCheckboxes = card.querySelectorAll('.objectives-list input[type="checkbox"]');

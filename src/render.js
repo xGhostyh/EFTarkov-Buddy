@@ -37,7 +37,15 @@ export function renderQuests() {
       if (state.selectedHideoutModule !== "All Modules") {
         const target = state.selectedHideoutModule.toLowerCase().trim();
         const fields = [t.chapter, t.name, t.trader, t.id].filter(Boolean);
-        if (!fields.some(val => String(val).toLowerCase().trim().includes(target))) return false;
+        
+        // THE FIX: Check if it strictly matches, or if the field STARTS WITH the target 
+        // (so "Generator Level 1" matches "Generator", but "Booze Generator" does NOT).
+        const matches = fields.some(val => {
+          const str = String(val).toLowerCase().trim();
+          return str === target || str.startsWith(target + " ");
+        });
+        
+        if (!matches) return false;
       }
       if (state.statusFilter === "AVAILABLE" && isDone(t.id)) return false;
       if (state.statusFilter === "COMPLETED" && !isDone(t.id)) return false;

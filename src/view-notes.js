@@ -1,30 +1,32 @@
 import { state } from './data.js';
 import { getNotes, setNotes } from './api.js';
-import { showToast } from './ui.js';
-import { debounce } from './ui.js';
+import { showToast, debounce } from './ui.js';
 
 export function renderNotes(container) {
   container.innerHTML = `
     <div class="notes-container">
       <div class="notes-header">
         <div class="notes-title">
-          <span class="notes-icon">📝</span>
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           <span>FIELD NOTES</span>
         </div>
         <div class="notes-actions">
-          <span class="notes-status" id="notes-status">Idle</span>
-          <button class="action-btn btn-complete" id="notes-clear-btn" title="Clear all notes">🗑️ Clear</button>
+          <span class="notes-status" id="notes-status">IDLE</span>
+          <button class="action-btn btn-backup btn-danger" id="notes-clear-btn" title="Clear all notes">
+            <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            CLEAR
+          </button>
         </div>
       </div>
       <textarea
         id="notes-textarea"
         class="notes-textarea"
-        placeholder="Write your raid notes, key locations, loot routes, task reminders...&#10;&#10;Everything is saved automatically."
+        placeholder="> Write your raid notes, key locations, loot routes, task reminders...&#10;&#10;> Everything is saved automatically."
         spellcheck="false"
       ></textarea>
       <div class="notes-footer">
-        <span id="notes-char-count">0 chars</span>
-        <span class="notes-hint">Auto-saved locally · Ctrl+A to select all</span>
+        <span id="notes-char-count">0 CHARS</span>
+        <span class="notes-hint">AUTO-SAVED LOCALLY</span>
       </div>
     </div>
   `;
@@ -34,35 +36,32 @@ export function renderNotes(container) {
   const charCountEl = document.getElementById('notes-char-count');
   const clearBtn = document.getElementById('notes-clear-btn');
 
-  // Cargar notas existentes
   textarea.value = getNotes();
   updateCharCount();
 
-  // Guardado con debounce para no saturar el backend en cada tecla
   const saveDebounced = debounce(async () => {
     await setNotes(textarea.value);
-    statusEl.textContent = '✓ Saved';
-    statusEl.style.color = 'var(--olive-l)';
+    statusEl.textContent = '✓ SAVED';
+    statusEl.style.color = 'var(--accent)';
     setTimeout(() => {
-      if (statusEl.textContent === '✓ Saved') {
-        statusEl.textContent = 'Idle';
-        statusEl.style.color = 'var(--muted)';
+      if (statusEl.textContent === '✓ SAVED') {
+        statusEl.textContent = 'IDLE';
+        statusEl.style.color = 'var(--text-mute)';
       }
     }, 1500);
   }, 400);
 
   textarea.addEventListener('input', () => {
-    statusEl.textContent = '● Editing...';
-    statusEl.style.color = 'var(--alert)';
+    statusEl.textContent = '● EDITING...';
+    statusEl.style.color = 'var(--text)';
     updateCharCount();
     saveDebounced();
   });
 
-  // Guardar también al perder foco (por si el debounce no llegó a disparar)
   textarea.addEventListener('blur', async () => {
     await setNotes(textarea.value);
-    statusEl.textContent = '✓ Saved';
-    statusEl.style.color = 'var(--olive-l)';
+    statusEl.textContent = '✓ SAVED';
+    statusEl.style.color = 'var(--accent)';
   });
 
   clearBtn.addEventListener('click', async () => {
@@ -71,16 +70,15 @@ export function renderNotes(container) {
     textarea.value = '';
     updateCharCount();
     await setNotes('');
-    statusEl.textContent = '✓ Cleared';
-    statusEl.style.color = 'var(--olive-l)';
+    statusEl.textContent = '✓ CLEARED';
+    statusEl.style.color = 'var(--accent)';
     showToast("Notes cleared", "success");
   });
 
-  // Focus automático al entrar
   setTimeout(() => textarea.focus(), 50);
 
   function updateCharCount() {
     const len = textarea.value.length;
-    charCountEl.textContent = `${len} char${len === 1 ? '' : 's'}`;
+    charCountEl.textContent = `${len} CHAR${len === 1 ? '' : 'S'}`;
   }
 }
