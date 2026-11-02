@@ -51,7 +51,7 @@ Stop alt-tabbing to a dozen wiki pages: your progress, requirements and maps liv
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/main.png" alt="Main Quests"><br><sub><b>Main Quests</b> — Follow the main story</sub></td>
-    <td width="50%"><img src="docs/screenshots/maps.png" alt="Maps"><br><sub><b>Maps</b> — Auto-saving field journal</sub></td>
+    <td width="50%"><img src="docs/screenshots/maps.jpg" alt="Maps"><br><sub><b>Maps</b> — Auto-saving field journal</sub></td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/hideout.png" alt="Hideout"><br><sub><b>Hideout</b> — module requirements</sub></td>
