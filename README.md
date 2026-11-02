@@ -6,16 +6,16 @@
 
 **Know your next objective before you load in.**
 
-`> OPERATION: PREP // v1.1.1 ONLINE`
+`> OPERATION: PREP // v1.1.2 ONLINE`
 
 ![Platform](https://img.shields.io/badge/Platform-Windows_x64-0b0d0a?style=flat-square&logo=windows&logoColor=d2b98a&labelColor=3b4a1f&color=0b0d0a)
 ![Built with Tauri](https://img.shields.io/badge/Tauri-v2-0b0d0a?style=flat-square&logo=tauri&logoColor=d2b98a&labelColor=3b4a1f&color=0b0d0a)
 ![Backend](https://img.shields.io/badge/Backend-Rust-0b0d0a?style=flat-square&logo=rust&logoColor=d2b98a&labelColor=3b4a1f&color=0b0d0a)
-![Version](https://img.shields.io/badge/Version-1.1.1-d2b98a?style=flat-square&labelColor=3b4a1f)
+![Version](https://img.shields.io/badge/Version-1.1.2-d2b98a?style=flat-square&labelColor=3b4a1f)
 
 <br>
 
-[![Download](https://img.shields.io/badge/%E2%AC%87%20DOWNLOAD-v1.1.1_for_Windows-8a9a4a?style=for-the-badge&labelColor=0b0d0a)](../../releases)
+[![Download](https://img.shields.io/badge/%E2%AC%87%20DOWNLOAD-v1.1.2_for_Windows-8a9a4a?style=for-the-badge&labelColor=0b0d0a)](../../releases)
 
 </div>
 
@@ -33,8 +33,8 @@ Stop alt-tabbing to a dozen wiki pages: your progress, requirements and maps liv
 |:-:|---|---|
 | 📜 | **Quest & Main Story Tracker** | Complete database of side quests and 1.0 main story chapters, organized by trader and by map. |
 | 🏠 | **Hideout Module Manager** | Full control of module upgrade paths and requirements to level up your hideout efficiently. |
-| 📦 | **Smart Item Tracker** | Automatically calculates every physical item needed for pending quests and hideout upgrades, filtering out objective action verbs. |
-| 🗺️ | **High-Res Interactive Maps** | Detailed map locations alongside essential key lists, with direct links to the official Tarkov Wiki. |
+| 📦 | **Smart Item Tracker** | Automatically totals every physical item needed for pending quests and hideout upgrades. |
+| 🗺️ | **High-Res Interactive Maps** | Detailed map locations alongside essential key lists and active quests on map with direct links to the official Tarkov Wiki when you need the full picture. |
 | 👤 | **PMC Profile & Trader Progression** | Track your level, loyalty levels and reputation across all traders in one centralized dashboard. |
 | 💾 | **Backups & Wipe / Prestige Reset** | Export and import your progress as JSON backups, or trigger a full wipe reset for a new season. |
 
@@ -76,7 +76,7 @@ Your PC is already busy running Tarkov. Buddy stays small, quick and out of your
 ## `// 04` — DEPLOYMENT
 
 1. Go to the [**Releases**](../../releases) section of this repository.
-2. Download the latest installer: `EFTarkov_Buddy_1.1.1_x64-setup.exe`
+2. Download the latest installer: `EFTarkov_Buddy_1.1.2_x64-setup.exe`
 3. Run the installer and follow the setup wizard.
 4. Launch **EFTarkov Buddy** and start tracking your raid goals.
 
