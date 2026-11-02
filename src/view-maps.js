@@ -1,0 +1,529 @@
+import { state, MAP_IMAGES, MAP_FLOOR_IMAGES, MAP_WEB_URLS, MAP_KEYS_DB, TRADERS, EDITIONS_BONUS } from './data.js';
+import { isPinned, isKeyOwned, setKeyOwned, setPins, getPins, isDone, getTraderLL, getTraderRep, setTraderLL, setTraderRep, setSetting, saveProgress } from './api.js';
+import { matchesMapFilter, mapKey, esc } from './util.js';
+import { openExternalUrl } from './api.js';
+import { showToast } from './ui.js';
+import { renderQuests } from './render.js';
+import { renderBars } from './bars.js';
+
+// ==========================================
+// PROFILE VIEW
+// ==========================================
+export async function changeEdition(newEditionStr) {
+  let currentEdition = state.progress.settings.edition || 'none';
+  if (currentEdition === newEditionStr) return;
+
+  for (let trader of TRADERS) {
+    if (trader === "ALL TRADERS") continue;
+    let oldBonus = (EDITIONS_BONUS[currentEdition] && EDITIONS_BONUS[currentEdition][trader]) || 0;
+    let newBonus = (EDITIONS_BONUS[newEditionStr] && EDITIONS_BONUS[newEditionStr][trader]) || 0;
+    
+    let diff = newBonus - oldBonus;
+    if (diff !== 0) {
+      let currentRep = parseFloat(getTraderRep(trader)) || 0.00;
+      currentRep += diff;
+      if (trader !== "Fence") currentRep = Math.max(0, currentRep);
+      await setTraderRep(trader, Number(currentRep.toFixed(2)));
+    }
+  }
+  await setSetting('edition', newEditionStr);
+  renderQuests();
+}
+
+export function renderProfile(container) {
+  const userLevel = state.progress.settings.level || 1;
+  const prestigeLevel = state.progress.settings.prestige || 0;
+  const playerFaction = state.progress.settings.faction || 'usec';
+  
+  const edition = state.progress.settings.edition || 'none';
+  const hasEod = edition === 'eod';
+  const hasUnheard = edition === 'unheard';
+  
+  const profileTraders = TRADERS.filter(t => t !== "ALL TRADERS");
+
+  container.innerHTML = `
+    <div class="profile-container">
+      <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        
+        <div class="level-card">
+          <div class="level-info" style="justify-content: space-evenly;">
+            <span class="level-label">Faction</span>
+            <img id="profile-faction-img" src="./images/${playerFaction}.png" alt="Faction" style="height: 38px; object-fit: contain; margin-top: 4px;">
+          </div>
+          <div class="level-controls">
+            <button class="btn-level ${playerFaction === 'usec' ? 'active' : ''}" id="btn-faction-usec" style="font-size: 0.7rem;">USEC</button>
+            <button class="btn-level ${playerFaction === 'bear' ? 'active' : ''}" id="btn-faction-bear" style="font-size: 0.7rem;">BEAR</button>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-info" style="justify-content: space-evenly;">
+            <span class="level-label">EOD Edition</span>
+            <img id="profile-eod-img" src="./images/eod.png" alt="EOD" style="height: 38px; object-fit: contain; margin-top: 4px; filter: ${hasEod ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: all 0.3s ease;">
+          </div>
+          <div class="level-controls" style="justify-content: center; align-items: center; display: flex;">
+            <input type="checkbox" id="check-eod" ${hasEod ? 'checked' : ''} style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-gold, #d2b98a);">
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-info" style="justify-content: space-evenly;">
+            <span class="level-label">Unheard Edition</span>
+            <img id="profile-unheard-img" src="./images/unheard.png" alt="Unheard" style="height: 38px; object-fit: contain; margin-top: 4px; filter: ${hasUnheard ? 'none' : 'grayscale(100%) opacity(0.5)'}; transition: all 0.3s ease;">
+          </div>
+          <div class="level-controls" style="justify-content: center; align-items: center; display: flex;">
+            <input type="checkbox" id="check-unheard" ${hasUnheard ? 'checked' : ''} style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-gold, #d2b98a);">
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-info">
+            <span class="level-label">Level</span>
+            <span class="level-value" id="profile-level-val">${userLevel}</span>
+          </div>
+          <div class="level-controls">
+            <button class="btn-level" id="btn-level-up">▲</button>
+            <button class="btn-level" id="btn-level-down">▼</button>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-info">
+            <span class="level-label">Prestige</span>
+            <span class="level-value" id="profile-prestige-val" style="color: var(--alert);">${prestigeLevel}</span>
+          </div>
+          <div class="level-controls">
+            <button class="btn-level" id="btn-prestige-up">▲</button>
+            <button class="btn-level" id="btn-prestige-down">▼</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="traders-grid">
+        ${profileTraders.map(trader => {
+          const traderTasks = state.tasks.filter(t => !t.is_main && t.trader === trader);
+          const totalTasks = traderTasks.length;
+          const completedTasks = traderTasks.filter(t => isDone(t.id)).length;
+          const pct = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0.0";
+
+          const currentLL = getTraderLL(trader);
+          const currentRep = getTraderRep(trader).toFixed(2);
+
+          return `
+            <div class="trader-card">
+              <div class="trader-card-header">
+                <span class="trader-name">${esc(trader)}</span>
+                <span class="trader-pct">${pct}%</span>
+              </div>
+              <div class="trader-task-count">${completedTasks}/${totalTasks} tasks</div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${pct}%;"></div>
+              </div>
+
+              <div class="trader-details">
+                <div class="loyalty-section">
+                  <span class="trader-label">Loyalty Level</span>
+                  <div class="loyalty-selector">
+                    ${[1, 2, 3, 4].map(ll => `
+                      <button class="loyalty-btn ${ll === Number(currentLL) ? 'active' : ''}" data-trader="${trader}" data-ll="${ll}">
+                        ${ll}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+                <div class="rep-section">
+                  <span class="trader-label">Reputation</span>
+                  <input type="number" step="0.01" class="rep-input" data-trader="${trader}" value="${currentRep}">
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div class="backup-section">
+        <h3>💾 Prestige/Season Reset & Progress Backup</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Export your progress before the new season/wipe/prestige level or restore a previous backup.</p>
+        <div class="backup-actions">
+          <button class="btn-backup" id="btn-export-progress">📤 Export Backup</button>
+          <button class="btn-backup" id="btn-import-progress">📥 Import Backup</button>
+          <input type="file" id="import-file-input" accept=".json" style="display: none;">
+          <button class="btn-backup btn-danger" id="btn-wipe-reset">⚠️ Wipe / Reset Progress</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const checkEod = document.getElementById('check-eod');
+  checkEod.onchange = async (e) => await changeEdition(e.target.checked ? 'eod' : 'none');
+
+  const checkUnheard = document.getElementById('check-unheard');
+  checkUnheard.onchange = async (e) => await changeEdition(e.target.checked ? 'unheard' : 'none');
+
+  document.getElementById('btn-faction-usec').onclick = async () => { await setSetting('player_faction', 'usec'); renderQuests(); };
+  document.getElementById('btn-faction-bear').onclick = async () => { await setSetting('player_faction', 'bear'); renderQuests(); };
+
+  document.getElementById('btn-level-up').onclick = async () => {
+    const next = userLevel + 1;
+    await setSetting('player_level', next);
+    document.getElementById('profile-level-val').innerText = next;
+  };
+  document.getElementById('btn-level-down').onclick = async () => {
+    if (userLevel > 1) {
+      const next = userLevel - 1;
+      await setSetting('player_level', next);
+      document.getElementById('profile-level-val').innerText = next;
+    }
+  };
+
+  document.getElementById('btn-prestige-up').onclick = async () => {
+    if (prestigeLevel < 6) {
+      const next = prestigeLevel + 1;
+      await setSetting('player_prestige', next);
+      document.getElementById('profile-prestige-val').innerText = next;
+    }
+  };
+  document.getElementById('btn-prestige-down').onclick = async () => {
+    if (prestigeLevel > 0) {
+      const next = prestigeLevel - 1;
+      await setSetting('player_prestige', next);
+      document.getElementById('profile-prestige-val').innerText = next;
+    }
+  };
+
+  document.getElementById('btn-export-progress').onclick = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.progress, null, 2));
+    const downloadAnchor = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `eftarkov_buddy_backup_${date}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast("Saved on Downloads folder");
+  };
+
+  const fileInput = document.getElementById('import-file-input');
+  document.getElementById('btn-import-progress').onclick = () => fileInput.click();
+  fileInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (imported && typeof imported === 'object' && imported.schemaVersion === 2) {
+          state.progress = imported;
+          await saveProgress(state.progress);
+          renderQuests();
+          showToast("Backup imported successfully!");
+        } else {
+          alert("⚠️ Invalid backup file format or outdated schema.");
+        }
+      } catch (err) {
+        alert("⚠️ Error parsing backup file.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  document.getElementById('btn-wipe-reset').onclick = async () => {
+    if (confirm("⚠️ Are you sure you want to reset all progress?\nThis cannot be undone.")) {
+      state.progress = { schemaVersion: 2, settings: {}, traders: {}, quests: {}, pins: {}, keys: {} };
+      await saveProgress(state.progress);
+      renderQuests();
+      showToast("Wipe reset completed.");
+    }
+  };
+
+  container.querySelectorAll('.loyalty-btn').forEach(btn => {
+    btn.onclick = async (e) => {
+      const trader = e.target.dataset.trader;
+      const ll = e.target.dataset.ll;
+      await setTraderLL(trader, ll);
+      const parent = e.target.parentElement;
+      parent.querySelectorAll('.loyalty-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+    };
+  });
+
+  container.querySelectorAll('.rep-input').forEach(input => {
+    input.onchange = async (e) => {
+      const trader = e.target.dataset.trader;
+      const val = parseFloat(e.target.value) || 0.00;
+      await setTraderRep(trader, val.toFixed(2));
+    };
+  });
+}
+
+// Helper to calculate exact zoom requirements dynamically across screen resizes
+function fitMapToContainer(map, bounds) {
+  if (!map) return;
+  
+  // 1. Tell Leaflet the DOM container size changed
+  map.invalidateSize();
+  
+  // 2. Temporarily remove minZoom lock so Leaflet can calculate zoom for smaller containers
+  map.setMinZoom(-10);
+  
+  // 3. Calculate the exact zoom level needed to fit the whole image
+  const fitZoom = map.getBoundsZoom(bounds, false);
+  
+  // 4. Set zoom and re-apply minZoom based on the new container size
+  map.setZoom(fitZoom);
+  map.setMinZoom(fitZoom);
+  map.fitBounds(bounds, { padding: [0, 0] });
+}
+
+// ==========================================
+// MAPS VIEW (Leaflet)
+// ==========================================
+export function renderMaps(container) {
+  let mapImgSrc = MAP_IMAGES[state.selectedOnlyMap] || './images/customs.png';
+  
+  if (MAP_FLOOR_IMAGES[state.selectedOnlyMap]) {
+    const floors = MAP_FLOOR_IMAGES[state.selectedOnlyMap];
+    if (!floors[state.selectedMapFloor]) {
+      state.selectedMapFloor = Object.keys(floors)[0];
+    }
+    mapImgSrc = floors[state.selectedMapFloor];
+  }
+
+  const mapWebUrl = MAP_WEB_URLS[state.selectedOnlyMap] || "https://tarkov-market.com/maps/";
+  const keysList = MAP_KEYS_DB[state.selectedOnlyMap] || [];
+  const wikiUrl = "https://escapefromtarkov.fandom.com/wiki/Keys_%26_Intel#Keys_&_Keycards";
+
+  const mapFilteredQuests = state.tasks.filter(t => {
+    return matchesMapFilter(t.map, state.selectedOnlyMap) && isPinned(t.id);
+  });
+
+  container.innerHTML = `
+      <div class="map-view-card">
+      <div id="map-outer-wrapper">
+        <div id="leaflet-map-container"></div>
+        
+        ${MAP_FLOOR_IMAGES[state.selectedOnlyMap] ? `
+          <div id="map-floor-selector" style="position: absolute; bottom: 0; left: 0; z-index: 1000; display: flex;">
+            ${Object.keys(MAP_FLOOR_IMAGES[state.selectedOnlyMap]).map((floor, idx) => `
+              <button class="action-btn map-floor-btn ${floor === state.selectedMapFloor ? 'active' : ''}" data-floor="${floor}" style="background: ${floor === state.selectedMapFloor ? 'var(--accent-gold, #d2b98a)' : 'rgba(11, 13, 10, 0.9)'}; color: ${floor === state.selectedMapFloor ? '#000' : '#fff'}; font-weight: bold; padding: 6px 12px; cursor: pointer; border-top-right-radius: ${idx === Object.keys(MAP_FLOOR_IMAGES[state.selectedOnlyMap]).length - 1 ? '4px' : '0'}; border-bottom-left-radius: 0; border-top-left-radius: 0; border-bottom-right-radius: 0; border: none; border-right: 1px solid var(--line); box-shadow: 0 -2px 6px rgba(0,0,0,0.4);">
+                ${floor}
+              </button>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        <div style="position: absolute; bottom: 42px; right: 10px; z-index: 1000; pointer-events: none;">
+          <div style="background: rgba(11, 13, 10, 0.9); border: 1px solid var(--line); padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; color: var(--accent-gold, #d2b98a); box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+            💡 Click anywhere on the map to add a custom pin.
+          </div>
+        </div>
+
+        <div style="position: absolute; bottom: 0; right: 0; z-index: 1000;">
+          <button class="action-btn" id="btn-open-interactive-map" style="background: var(--accent-gold, #d2b98a); color: #000; font-weight: bold; padding: 6px 12px; cursor: pointer; border-top-left-radius: 4px; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border: none; box-shadow: 0 -2px 6px rgba(0,0,0,0.4);">
+            🗺️ Open Interactive Map 🔗
+          </button>
+        </div>
+      </div>
+
+      <div class="map-sidebar-panels" style="display: flex; flex-direction: column; gap: 15px; width: 340px; flex-shrink: 0; height: 100%; overflow-y: auto;">
+        <div class="map-keys-card" style="width: 100%; background-color: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px;">
+          <h3 style="margin-top: 0;">
+            <a href="${wikiUrl}" id="link-important-keys" style="color: var(--accent-gold, #d2b98a); text-decoration: none;">🔑 Important Keys 🔗</a>
+          </h3>
+          <div class="keys-list">
+            ${keysList.length > 0 ? keysList.map(keyName => {
+              const kId = `key_${state.selectedOnlyMap.replace(/\s+/g, '')}_${keyName.replace(/\s+/g, '')}`;
+              const checked = isKeyOwned(kId);
+              return `
+                <label class="key-item" style="color: ${checked ? '#4caf50' : '#e0e0e0'}; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer;">
+                  <input type="checkbox" data-key="${kId}" ${checked ? 'checked' : ''}>
+                  <span>${esc(keyName)}</span>
+                </label>
+              `;
+            }).join('') : `<p style="color: #888; font-size: 0.85rem;">No keys registered.</p>`}
+          </div>
+        </div>
+
+        <div class="map-quests-card" style="background-color: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+          <h3 style="margin: 0;">
+            <a href="#" id="map-quests-title-link" style="font-family: var(--f-head); font-size: 1.15rem; color: var(--sand, #d2b98a); text-decoration: none; display: block; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+              📌 Active Quests on ${esc(state.selectedOnlyMap)} (${mapFilteredQuests.length}) 🔗
+            </a>
+          </h3>
+          <div class="map-quests-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 25vh; overflow-y: auto;">
+            ${mapFilteredQuests.length > 0 ? mapFilteredQuests.map(quest => `
+              <div class="map-quest-item" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 6px 8px; background-color: rgba(11, 13, 10, 0.8); border-radius: var(--radius); border: 1px solid var(--line); color: #e0e0e0;">
+                <span style="font-family: var(--f-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px;">${esc(quest.name)}</span>
+                <span style="font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 3px; flex-shrink: 0;">${esc(quest.trader || 'Quest')}</span>
+              </div>
+            `).join('') : `<p style="color: #888; font-size: 0.85rem;">No active (pinned) quests for this map.</p>`}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const currentMapKey = mapKey(state.selectedOnlyMap, state.selectedMapFloor);
+  
+  if (MAP_FLOOR_IMAGES[state.selectedOnlyMap]) {
+    container.querySelectorAll('.map-floor-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        state.selectedMapFloor = e.target.dataset.floor;
+        renderQuests();
+      };
+    });
+  }
+
+  setTimeout(() => {
+    const mapElement = document.getElementById('leaflet-map-container');
+    if (!mapElement) return;
+
+    if (state.activeMapKey !== currentMapKey) {
+      if (state.currentLeafletMap) {
+        state.currentLeafletMap.remove();
+        state.currentLeafletMap = null;
+      }
+      state.activeMapKey = currentMapKey;
+
+      state.currentLeafletMap = L.map('leaflet-map-container', {
+        crs: L.CRS.Simple,
+        zoomControl: false, // Disable default top-left control
+        zoomDelta: 0.5,
+        zoomSnap: 0,
+        minZoom: -5,
+        maxZoom: 5,
+        scrollWheelZoom: 'center',
+        wheelPxPerZoomLevel: 120
+      });
+
+      // Add zoom control explicitly to the top-right corner
+      L.control.zoom({ position: 'topright' }).addTo(state.currentLeafletMap);
+
+      const img = new Image();
+      img.src = mapImgSrc;
+      img.onload = () => {
+        const imgW = img.naturalWidth || 4096;
+        const imgH = img.naturalHeight || 4096;
+        const bounds = [[0, 0], [imgH, imgW]];
+        
+        L.imageOverlay(mapImgSrc, bounds).addTo(state.currentLeafletMap);
+
+        setTimeout(() => {
+          fitMapToContainer(state.currentLeafletMap, bounds);
+
+          const zoomControl = document.querySelector('.leaflet-control-zoom');
+          if (zoomControl && !document.getElementById('btn-reset-map-view')) {
+            const resetBtn = document.createElement('a');
+            resetBtn.id = 'btn-reset-map-view';
+            resetBtn.href = '#';
+            resetBtn.title = 'Reset Map View';
+            resetBtn.innerHTML = '⛶';
+            resetBtn.style.fontSize = '15px';
+            resetBtn.style.display = 'flex';
+            resetBtn.style.alignItems = 'center';
+            resetBtn.style.justifyContent = 'center';
+            
+            resetBtn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              fitMapToContainer(state.currentLeafletMap, bounds);
+            };
+            zoomControl.appendChild(resetBtn);
+          }
+
+          if (window.mapResizeObserver) window.mapResizeObserver.disconnect();
+
+            let resizeTimeout;
+            window.mapResizeObserver = new ResizeObserver(() => {
+              clearTimeout(resizeTimeout);
+              resizeTimeout = setTimeout(() => {
+                if (state.currentLeafletMap) {
+                  fitMapToContainer(state.currentLeafletMap, bounds);
+                }
+              }, 100);
+            });
+
+            window.mapResizeObserver.observe(mapElement);
+
+          const savedPins = getPins(currentMapKey);
+          savedPins.forEach((pin, index) => {
+            const customIcon = L.divIcon({
+              className: 'custom-map-pin-wrapper',
+              html: `<div style="color: #fff; font-family: var(--f-mono); font-size: 12px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.9), -1px -1px 3px rgba(0,0,0,0.9); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">
+                      <span>📌 ${esc(pin.text)}</span>
+                      <button class="btn-delete-pin" data-idx="${index}" style="background: rgba(0,0,0,0.7); border: none; padding: 0 4px; border-radius: 2px; cursor: pointer; color: #ff8282; font-size: 10px;" title="Delete pin">✕</button>
+                    </div>`,
+              iconSize: null,
+              iconAnchor: [0, 12]
+            });
+            
+            const marker = L.marker([pin.lat, pin.lng], { icon: customIcon }).addTo(state.currentLeafletMap);
+            
+            marker.on('add', () => {
+               setTimeout(() => {
+                 const btn = marker.getElement()?.querySelector('.btn-delete-pin');
+                 if (btn) {
+                   btn.onclick = async (e) => {
+                     e.stopPropagation();
+                     const newPins = [...savedPins];
+                     newPins.splice(index, 1);
+                     await setPins(currentMapKey, newPins);
+                     renderQuests();
+                     showToast("Pin removed");
+                   };
+                 }
+               }, 10);
+            });
+          });
+
+          state.currentLeafletMap.on('click', async (e) => {
+            const pinText = prompt("Enter the name of the mission or objective for this pin:");
+            if (!pinText || !pinText.trim()) return;
+
+            const newPin = { lat: e.latlng.lat, lng: e.latlng.lng, text: pinText.trim() };
+            const newPins = [...getPins(currentMapKey), newPin];
+            
+            await setPins(currentMapKey, newPins);
+            renderQuests();
+            showToast("Pin added successfully");
+          });
+        }, 50); 
+      };
+      
+      img.onerror = () => {
+        mapElement.innerHTML = `<div style="color: #ff8282; font-weight: bold; text-align: center; padding: 40px;">⚠️ Image not found: ${mapImgSrc}. Place it in src/images/</div>`;
+      };
+    }
+  }, 50);
+
+  document.getElementById('btn-open-interactive-map')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openExternalUrl(mapWebUrl);
+  });
+
+  document.getElementById('link-important-keys')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openExternalUrl(wikiUrl);
+  });
+
+  document.getElementById('map-quests-title-link')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    state.selectedType = "SIDE";
+    state.selectedMap = state.selectedOnlyMap;
+    state.statusFilter = "ACTIVE";
+    
+    document.querySelectorAll('#type-bar .nav-btn').forEach(b => {
+      b.classList.toggle('selected-type', b.dataset.type === "SIDE");
+    });
+    renderBars();
+    renderQuests();
+  });
+
+  container.querySelectorAll('.keys-list input[type="checkbox"]').forEach(chk => {
+    chk.onchange = async (e) => {
+      await setKeyOwned(e.target.dataset.key, e.target.checked);
+      const parentLabel = e.target.parentElement;
+      if (parentLabel) parentLabel.style.color = e.target.checked ? '#4caf50' : '#e0e0e0';
+    };
+  });
+}

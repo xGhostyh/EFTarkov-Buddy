@@ -7,96 +7,126 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  
-  <!-- Leaflet CSS para los mapas interactivos -->
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <link rel="stylesheet" href="style.css">
-  <script defer src="main.js"></script>
+  <script type="module" defer src="main.js"></script>
 </head>
 <body>
 
-  <!-- Canvas para el fondo topográfico procedural dinámico -->
   <canvas id="bg-canvas"></canvas>
   <div class="grain" aria-hidden="true"></div>
 
-  <header>
-    <!-- Logo y título juntos a la izquierda usando flex-start y un gap ajustado -->
-    <div class="top-line" style="display: flex; align-items: center; justify-content: flex-start; gap: 10px;">
-      <img src="icon.png" alt="Logo" style="width: 36px; height: 36px; object-fit: contain;">
-      <h1>EFTarkov <b>Buddy</b></h1>
-      <div class="nav-title">v1.1.0</div>
-    </div>
-
-    <!-- Main Navigation: Quest / View Type -->
-    <div class="nav-section">
-      <div class="nav-title">// NAVIGATION:</div>
-      <div id="type-bar" class="wrap-bar">
-        <button class="nav-btn" data-type="PROFILE">Profile</button>
-        <button class="nav-btn selected-type" data-type="SIDE">Side Quests</button>
-        <button class="nav-btn" data-type="MAIN">Main Story (1.0)</button>
-        <button class="nav-btn" data-type="MAPS">Maps</button>
-        <button class="nav-btn" data-type="HIDEOUT">Hideout</button>
-        <button class="nav-btn" data-type="ITEMS">Item Tracker</button>
-      </div>
-    </div>
-
-    <!-- Filters for Side Quests (Traders and Maps) -->
-    <div id="side-filters-container">
-      <div class="nav-section">
-        <div class="nav-title">// TRADERS:</div>
-        <div id="trader-bar" class="wrap-bar"></div>
-      </div>
-      <div class="nav-section">
-        <div class="nav-title">// MAP:</div>
-        <div id="map-bar" class="wrap-bar"></div>
-      </div>
-    </div>
-
-    <!-- Filters for Main Story (Chapters) -->
-    <div id="main-filters-container" style="display: none;">
-      <div class="nav-section">
-        <div class="nav-title">// CHAPTER:</div>
-        <div id="chapter-bar" class="wrap-bar"></div>
-      </div>
-    </div>
-
-    <!-- Filters for Maps Tab -->
-    <div id="maps-filters-container" style="display: none;">
-      <div class="nav-section">
-        <div class="nav-title">// MAP:</div>
-        <div id="maps-only-bar" class="wrap-bar"></div>
-      </div>
-    </div>
-
-    <!-- Filters for Hideout Tab -->
-    <div id="hideout-filters-container" style="display: none;">
-      <div class="nav-section">
-        <div class="nav-title">// MODULE:</div>
-        <div id="hideout-bar" class="wrap-bar"></div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Search Bar & Status Filters -->
-  <div class="controls-bar">
-    <div id="status-filters">
-      <input type="text" id="search-input" placeholder="Search quests or objectives...">
-      <button class="btn-filter active" data-filter="ALL">All</button>
-      <button class="btn-filter" data-filter="ACTIVE">Active</button>
-      <button class="btn-filter" data-filter="AVAILABLE">Available</button>
-      <button class="btn-filter btn-kappa" data-filter="KAPPA">Kappa</button>
-      <button class="btn-filter" data-filter="COMPLETED">Completed</button>
-      <div id="global-stats">Total: 0 / 0 (0.0%)</div>
-    </div>
+  <!-- Mobile Topbar -->
+  <div class="mobile-topbar">
+    <img src="icon.png" alt="" style="width: 28px; height: 28px; object-fit: contain;">
+    <h1>EFTarkov <b>Buddy</b></h1>
+    <button id="mobile-filters-toggle" class="icon-btn" aria-label="Toggle filters" aria-expanded="false">☰</button>
   </div>
 
-  <!-- Main Container for Cards / Maps / Hideout -->
-  <main id="quests-container"></main>
+  <div class="app-shell">
 
-  <!-- Carga de la librería procedural y montaje del fondo -->
+    <!-- TOPBAR NAVIGATION -->
+    <header class="topbar" id="sidebar" aria-label="Primary navigation">
+
+      <div class="topbar-row main-row">
+        <div class="topbar-brand">
+          <img src="icon.png" alt="" style="width: 28px; height: 28px; object-fit: contain;">
+          <div class="brand-title">EFTARKOV <b>BUDDY</b> <span class="brand-version" id="app-version">v1.1.1</span></div>
+        </div>
+
+        <!-- Main Horizontal Navigation -->
+        <nav class="horizontal-nav" aria-label="Main navigation">
+          <div class="section-label">// NAVIGATION</div>
+          <div id="type-bar" class="horizontal-nav-list">
+            <button class="nav-btn" data-type="PROFILE">Profile</button>
+            <button class="nav-btn selected-type" data-type="SIDE">Side Quests</button>
+            <button class="nav-btn" data-type="MAIN">Main Story (1.0)</button>
+            <button class="nav-btn" data-type="MAPS">Maps</button>
+            <button class="nav-btn" data-type="HIDEOUT">Hideout</button>
+            <button class="nav-btn" data-type="ITEMS">Item Tracker</button>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Horizontal Filter Bar -->
+      <div class="topbar-row filter-row">
+        <div class="section-label">// FILTERS</div>
+        
+        <div id="side-filters-container" class="horizontal-filters">
+  <div class="filter-group">
+    <span class="sub-label">MAP</span>
+    <div id="map-bar" class="wrap-bar"></div>
+  </div>
+  <div class="filter-group">
+    <span class="sub-label">TRADERS</span>
+    <div id="trader-bar" class="wrap-bar"></div>
+  </div>
+</div>
+
+        <div id="main-filters-container" class="horizontal-filters" style="display: none;">
+          <div class="filter-group">
+            <span class="sub-label">CHAPTER</span>
+            <div id="chapter-bar" class="wrap-bar"></div>
+          </div>
+        </div>
+
+        <div id="maps-filters-container" class="horizontal-filters" style="display: none;">
+          <div class="filter-group">
+            <span class="sub-label">MAP</span>
+            <div id="maps-only-bar" class="wrap-bar"></div>
+          </div>
+        </div>
+
+        <div id="hideout-filters-container" class="horizontal-filters" style="display: none;">
+          <div class="filter-group">
+            <span class="sub-label">MODULE</span>
+            <div id="hideout-bar" class="wrap-bar"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+      <div class="controls-bar">
+        <div id="status-filters">
+          <input type="text" id="search-input" placeholder="Search quests or objectives... (press /)" aria-label="Search">
+          <button class="btn-filter active" data-filter="ALL">All</button>
+          <button class="btn-filter" data-filter="ACTIVE">Active</button>
+          <button class="btn-filter" data-filter="AVAILABLE">Available</button>
+          <button class="btn-filter btn-kappa" data-filter="KAPPA">Kappa</button>
+          <button class="btn-filter" data-filter="COMPLETED">Completed</button>
+          <div id="global-stats">Total: 0 / 0 (0.0%)</div>
+        </div>
+      </div>
+
+      <section id="quests-container" aria-live="polite">
+        <!-- Skeleton injected by main.js until data loads -->
+      </section>
+    </main>
+  </div>
+
+  <!-- Empty state template -->
+  <template id="empty-state-tpl">
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">🔍</div>
+      <div class="empty-title">Nothing matches those filters</div>
+      <div class="empty-hint">Try clearing the search, changing trader, or switching map.</div>
+    </div>
+  </template>
+
+  <!-- Skeleton template -->
+  <template id="skeleton-tpl">
+    <div class="skeleton-card">
+      <div class="skeleton-line skeleton-title"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line short"></div>
+    </div>
+  </template>
+
   <script src="topo-background.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -113,6 +143,24 @@
           grid: true
         });
       }
+
+      // Mobile filter disclosure
+      const toggle = document.getElementById('mobile-filters-toggle');
+      const sidebar = document.getElementById('sidebar');
+      if (toggle && sidebar) {
+        toggle.addEventListener('click', () => {
+          const open = sidebar.classList.toggle('mobile-open');
+          toggle.setAttribute('aria-expanded', String(open));
+        });
+      }
+
+      // Keyboard shortcut: / focuses search
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          document.getElementById('search-input')?.focus();
+        }
+      });
     });
   </script>
 
