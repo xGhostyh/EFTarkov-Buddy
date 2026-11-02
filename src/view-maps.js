@@ -303,23 +303,21 @@ export function renderMaps(container) {
         <div id="leaflet-map-container"></div>
         
         ${MAP_FLOOR_IMAGES[state.selectedOnlyMap] ? `
-          <div id="map-floor-selector" style="position: absolute; bottom: 0; left: 0; z-index: 1000; display: flex;">
-            ${Object.keys(MAP_FLOOR_IMAGES[state.selectedOnlyMap]).map((floor, idx) => `
-              <button class="action-btn map-floor-btn ${floor === state.selectedMapFloor ? 'active' : ''}" data-floor="${floor}" style="background: ${floor === state.selectedMapFloor ? 'var(--accent-gold, #d2b98a)' : 'rgba(11, 13, 10, 0.9)'}; color: ${floor === state.selectedMapFloor ? '#000' : '#fff'}; font-weight: bold; padding: 6px 12px; cursor: pointer; border-top-right-radius: ${idx === Object.keys(MAP_FLOOR_IMAGES[state.selectedOnlyMap]).length - 1 ? '4px' : '0'}; border-bottom-left-radius: 0; border-top-left-radius: 0; border-bottom-right-radius: 0; border: none; border-right: 1px solid var(--line); box-shadow: 0 -2px 6px rgba(0,0,0,0.4);">
+          <div id="map-floor-selector" style="position: absolute; bottom: 0; left: 0; z-index: 1000; display: flex; gap: 6px; padding: 10px;">
+            ${Object.keys(MAP_FLOOR_IMAGES[state.selectedOnlyMap]).map((floor) => `
+              <button class="map-ui-btn ${floor === state.selectedMapFloor ? 'active' : ''}" data-floor="${floor}">
                 ${floor}
               </button>
             `).join('')}
           </div>
         ` : ''}
 
-        <div style="position: absolute; bottom: 42px; right: 10px; z-index: 1000; pointer-events: none;">
-          <div style="background: rgba(11, 13, 10, 0.9); border: 1px solid var(--line); padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; color: var(--accent-gold, #d2b98a); box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
-            💡 Click anywhere on the map to add a custom pin.
-          </div>
+        <div class="map-hint-tooltip">
+          💡 Click anywhere on the map to add a custom pin.
         </div>
 
-        <div style="position: absolute; bottom: 0; right: 0; z-index: 1000;">
-          <button class="action-btn" id="btn-open-interactive-map" style="background: var(--accent-gold, #d2b98a); color: #000; font-weight: bold; padding: 6px 12px; cursor: pointer; border-top-left-radius: 4px; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border: none; box-shadow: 0 -2px 6px rgba(0,0,0,0.4);">
+        <div style="position: absolute; bottom: 0; right: 0; z-index: 1000; padding: 10px;">
+          <button class="map-ui-btn map-ui-btn-gold" id="btn-open-interactive-map">
             🗺️ Open Interactive Map 🔗
           </button>
         </div>
@@ -366,9 +364,9 @@ export function renderMaps(container) {
   const currentMapKey = mapKey(state.selectedOnlyMap, state.selectedMapFloor);
   
   if (MAP_FLOOR_IMAGES[state.selectedOnlyMap]) {
-    container.querySelectorAll('.map-floor-btn').forEach(btn => {
+    container.querySelectorAll('.map-floor-btn, .map-ui-btn[data-floor]').forEach(btn => {
       btn.onclick = (e) => {
-        state.selectedMapFloor = e.target.dataset.floor;
+        state.selectedMapFloor = e.currentTarget.dataset.floor;
         renderQuests();
       };
     });
@@ -387,7 +385,8 @@ export function renderMaps(container) {
 
       state.currentLeafletMap = L.map('leaflet-map-container', {
         crs: L.CRS.Simple,
-        zoomControl: false, // Disable default top-left control
+        zoomControl: false,
+        attributionControl: false,
         zoomDelta: 0.5,
         zoomSnap: 0,
         minZoom: -5,
@@ -396,8 +395,10 @@ export function renderMaps(container) {
         wheelPxPerZoomLevel: 120
       });
 
-      // Add zoom control explicitly to the top-right corner
       L.control.zoom({ position: 'topright' }).addTo(state.currentLeafletMap);
+      
+      // Grupo de capas para los pines
+      state.currentPinLayer = L.layerGroup().addTo(state.currentLeafletMap);
 
       const img = new Image();
       img.src = mapImgSrc;
@@ -433,50 +434,61 @@ export function renderMaps(container) {
 
           if (window.mapResizeObserver) window.mapResizeObserver.disconnect();
 
-            let resizeTimeout;
-            window.mapResizeObserver = new ResizeObserver(() => {
-              clearTimeout(resizeTimeout);
-              resizeTimeout = setTimeout(() => {
-                if (state.currentLeafletMap) {
-                  fitMapToContainer(state.currentLeafletMap, bounds);
-                }
-              }, 100);
-            });
-
-            window.mapResizeObserver.observe(mapElement);
-
-          const savedPins = getPins(currentMapKey);
-          savedPins.forEach((pin, index) => {
-            const customIcon = L.divIcon({
-              className: 'custom-map-pin-wrapper',
-              html: `<div style="color: #fff; font-family: var(--f-mono); font-size: 12px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.9), -1px -1px 3px rgba(0,0,0,0.9); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">
-                      <span>📌 ${esc(pin.text)}</span>
-                      <button class="btn-delete-pin" data-idx="${index}" style="background: rgba(0,0,0,0.7); border: none; padding: 0 4px; border-radius: 2px; cursor: pointer; color: #ff8282; font-size: 10px;" title="Delete pin">✕</button>
-                    </div>`,
-              iconSize: null,
-              iconAnchor: [0, 12]
-            });
-            
-            const marker = L.marker([pin.lat, pin.lng], { icon: customIcon }).addTo(state.currentLeafletMap);
-            
-            marker.on('add', () => {
-               setTimeout(() => {
-                 const btn = marker.getElement()?.querySelector('.btn-delete-pin');
-                 if (btn) {
-                   btn.onclick = async (e) => {
-                     e.stopPropagation();
-                     const newPins = [...savedPins];
-                     newPins.splice(index, 1);
-                     await setPins(currentMapKey, newPins);
-                     renderQuests();
-                     showToast("Pin removed");
-                   };
-                 }
-               }, 10);
-            });
+          let resizeTimeout;
+          window.mapResizeObserver = new ResizeObserver(() => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+              if (state.currentLeafletMap) {
+                fitMapToContainer(state.currentLeafletMap, bounds);
+              }
+            }, 100);
           });
+          window.mapResizeObserver.observe(mapElement);
 
+          // Refresca los pines sin recargar el mapa
+          const refreshPins = () => {
+            state.currentPinLayer.clearLayers();
+            const savedPins = getPins(currentMapKey);
+            
+            savedPins.forEach((pin, index) => {
+              const customIcon = L.divIcon({
+                className: 'custom-map-pin-wrapper',
+                html: `<div style="color: #fff; font-family: var(--f-mono); font-size: 12px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.9), -1px -1px 3px rgba(0,0,0,0.9); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">
+                        <span>📌 ${esc(pin.text)}</span>
+                        <button class="btn-delete-pin" data-idx="${index}" style="background: rgba(0,0,0,0.7); border: none; padding: 0 4px; border-radius: 2px; cursor: pointer; color: #ff8282; font-size: 10px;" title="Delete pin">✕</button>
+                      </div>`,
+                iconSize: null,
+                iconAnchor: [0, 12]
+              });
+              
+              L.marker([pin.lat, pin.lng], { 
+                icon: customIcon,
+                bubblingMouseEvents: false 
+              }).addTo(state.currentPinLayer);
+            });
+          };
+
+          refreshPins();
+
+          // Delegación de eventos: Gestiona tanto el borrado como la creación de pines
           state.currentLeafletMap.on('click', async (e) => {
+            const deleteBtn = e.originalEvent.target.closest('.btn-delete-pin');
+            
+            if (deleteBtn) {
+              L.DomEvent.stopPropagation(e); 
+              const index = parseInt(deleteBtn.dataset.idx, 10);
+              const savedPins = getPins(currentMapKey);
+              
+              if (Number.isFinite(index) && savedPins[index]) {
+                const newPins = [...savedPins];
+                newPins.splice(index, 1);
+                await setPins(currentMapKey, newPins);
+                refreshPins(); 
+                showToast("Pin removed");
+              }
+              return; 
+            }
+
             const pinText = prompt("Enter the name of the mission or objective for this pin:");
             if (!pinText || !pinText.trim()) return;
 
@@ -484,7 +496,7 @@ export function renderMaps(container) {
             const newPins = [...getPins(currentMapKey), newPin];
             
             await setPins(currentMapKey, newPins);
-            renderQuests();
+            refreshPins(); 
             showToast("Pin added successfully");
           });
         }, 50); 

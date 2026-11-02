@@ -170,12 +170,16 @@ body {
 
 .horizontal-nav-list .nav-btn::before { content: attr(data-icon); font-size: 1rem; margin-right: 10px; filter: grayscale(100%) opacity(0.5); transition: filter 0.2s; }
 .app-shell.horizontal-layout .horizontal-nav-list .nav-btn::before { margin-right: 6px !important; }
-.horizontal-nav-list .nav-btn:hover, .horizontal-nav-list .nav-btn.selected-type { background-color: var(--olive-d); border-color: var(--olive-l); color: var(--sand); }
+.horizontal-nav-list .nav-btn:hover, .horizontal-nav-list .nav-btn.selected-type { background-color: var(--olive-d); border-color: var(--olive-l); color: var(--white); }
 .horizontal-nav-list .nav-btn:hover::before, .horizontal-nav-list .nav-btn.selected-type::before { filter: none; }
 
 .filters-container { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--line); padding-top: 16px; }
-.horizontal-filters { display: flex; flex-direction: column; gap: 24px; }
+.horizontal-filters { display: flex; flex-direction: column; gap: 32px; }
 .app-shell.horizontal-layout .horizontal-filters { flex-direction: row !important; align-items: center !important; gap: 32px !important; flex-wrap: wrap !important; }
+
+#side-filters-container .filter-group:not(:last-child) {
+  margin-bottom: 12px;
+}
 
 .filter-group { display: flex; flex-direction: column; gap: 4px; }
 .app-shell.horizontal-layout .filter-group { flex-direction: row !important; align-items: center !important; gap: 8px !important; flex-wrap: wrap !important; }
@@ -186,7 +190,7 @@ body {
 .app-shell.horizontal-layout .wrap-bar { flex-wrap: wrap !important; }
 .wrap-bar .nav-btn { font-size: 0.75rem; padding: 4px 8px; background-color: rgba(11, 13, 10, 0.8); border: 1px solid var(--line); color: var(--muted); border-radius: 2px; cursor: pointer; font-family: var(--f-head); text-transform: uppercase; transition: all 0.2s; white-space: nowrap; }
 .wrap-bar .nav-btn:hover { border-color: var(--sand-d); color: var(--text); }
-.wrap-bar .nav-btn.selected-trader, .wrap-bar .nav-btn.selected-map, .wrap-bar .nav-btn.selected-chapter { background-color: var(--olive-d); color: var(--sand); border-color: var(--olive-l); }
+.wrap-bar .nav-btn.selected-trader, .wrap-bar .nav-btn.selected-map, .wrap-bar .nav-btn.selected-chapter { background-color: var(--olive-d); color: var(--white); border-color: var(--olive-l); }
 
 /* ==========================================================================
    4. MAIN CONTENT
@@ -303,6 +307,74 @@ body {
 .keys-list { display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow-y: auto; }
 .key-item { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; padding: 6px 8px; background-color: rgba(11, 13, 10, 0.8); border-radius: var(--radius); border: 1px solid var(--line); cursor: pointer; transition: all 0.2s; }
 .key-item:hover { border-color: var(--olive); }
+
+/* ==========================================================================
+   MAP UI CONTROLS (Floating buttons & tooltips)
+   ========================================================================== */
+
+/* Botones flotantes (Pisos y Abrir Mapa) */
+.map-ui-btn {
+  background: rgba(11, 13, 10, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--f-head);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.map-ui-btn:hover {
+  border-color: var(--olive);
+  color: var(--text);
+  background: rgba(21, 26, 17, 0.95);
+}
+
+/* Botón activo (Piso actual) */
+.map-ui-btn.active {
+  background: var(--olive-d);
+  color: var(--white);
+  border-color: var(--olive-l);
+}
+
+.map-ui-btn-gold {
+  border-color: var(--olive-l);
+  color: var(--olive-l);
+}
+
+/* El hover ahora usa el verde oliva de la app y texto oscuro */
+.map-ui-btn-gold:hover {
+  background: var(--olive-d);
+  color: var(--bg); /* Casi negro (el color de fondo de la app) */
+  border-color: var(--olive-l);
+}
+
+/* Tooltip flotante */
+.map-hint-tooltip {
+  position: absolute;
+  bottom: 60px;
+  right: 10px;
+  z-index: 1000;
+  pointer-events: none;
+  background: rgba(11, 13, 10, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--olive-l);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-family: var(--f-mono);
+  color: var(--muted);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
 
 /* UI Helpers */
 .toast-notification { position: fixed; top: 20px; right: 20px; background-color: var(--panel); border: 1px solid var(--sand); border-left-width: 4px; color: var(--text); font-family: var(--f-mono); padding: 14px 20px; border-radius: var(--radius); font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85); z-index: 9999; display: flex; align-items: center; gap: 10px; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; }
