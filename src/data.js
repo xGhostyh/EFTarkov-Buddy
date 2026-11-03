@@ -51,7 +51,7 @@ export const MAP_IMAGES = {
 export const MAP_FLOOR_IMAGES = {
   "Customs": { "Dorms": "./images/customs_dorms.jpg", "Main": "./images/customs.jpg" },
   "Shoreline": { "Resort": "./images/shoreline_r.jpg", "Main": "./images/shoreline.jpg" },
-  "The Lab": { "Floor 1": "./images/the_lab_floor1.jpg", "Floor 2": "./images/the_lab.jpg", "Floor 3": "./images/the_lab_floor3.jpg" }
+  "The Lab": { "Floor -1": "./images/the_lab_floor1.jpg", "Ground Floor": "./images/the_lab.jpg", "Floor 2": "./images/the_lab_floor3.jpg" }
 };
 
 export const MAP_DEFAULT_FLOOR = {
